@@ -1,0 +1,23 @@
+delete from tblMenu
+DBCC CHECKIDENT ('tblMenu', RESEED, 0);
+GO
+select * from tblMenu
+
+delete from tblSubMenu1
+DBCC CHECKIDENT ('tblSubMenu1', RESEED, 0);
+GO
+select * from tblSubMenu1
+
+delete from tblSubMenu2
+DBCC CHECKIDENT ('tblSubMenu2', RESEED, 0);
+GO
+select * from tblSubMenu2
+
+delete from tblSubMenu3
+DBCC CHECKIDENT ('tblSubMenu1', RESEED, 0);
+GO
+select * from tblSubMenu3
+
+
+delete from Tbl_System_Log where emp_id = 10008
+delete from tblPermission where empid in (5,11638,11642,10038,10009)

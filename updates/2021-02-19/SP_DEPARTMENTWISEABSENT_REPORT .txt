@@ -1,0 +1,312 @@
+--exec SP_DEPARTMENTWISEABSENT_REPORT @sdate='2020-12-01', @edate='2021-02-28', @deptname='15',@flag=0, @empId = 0
+
+CREATE proc SP_DEPARTMENTWISEABSENT_REPORT  
+@sdate datetime,  
+@edate datetime,  
+@deptname as varchaR(100)='',  
+@flag int=0 ,
+@empId int = 0
+as  
+begin  
+
+	set nocount on  
+	if @flag=0
+	begin
+		truncate table tmpabsentreport
+	end 
+  
+	create table #tmpabsentreport (   
+		emp_id int,  
+		emp_name varchaR(50), 
+		empname_id varchar(200), 
+		dept_name varchaR(50),  
+		tdate datetime,  
+		outdate datetime,  
+		duty_in varchar(15),  
+		duty_out varchar(15),  
+		duty_roster varchar(50),  
+		intime varchar(15),  
+		outtime varchar(15),  
+		indiff int,  
+		outdiff int,  
+		worked int,  
+		remarks varchar(200) 
+	)  
+  
+	declare @emp_id int  
+	declare @emp_name varchaR(50)  
+	declare @dept_name varchaR(50)  
+	declare @tdate datetime  
+	declare @duty_in varchar(15)  
+	declare @duty_out varchar(15)  
+	declare @intime varchar(15)  
+	declare @outtime varchar(15)  
+	declare @remarks varchar(200)  
+	set @tdate = @sdate  
+	declare @wh int
+
+	if(@empId > 0)
+	begin
+		insert into #tmpabsentreport  
+  
+		select emp_id,emp_fullname,emp_fullname,DEPT_NAME,sdate,outdate,assignedin,assignedout,assignedin + '-' + assignedout as dutyin,actualin,actualout,indiff,outdiff,worked,absremarks  
+		from ( 
+			select duty.emp_id,duty.sdate,empinfo.emp_fullname,empinfo.DEPT_NAME,   
+			(case     when tdate is null then                  
+			(case     when llog.leave_date is null then 'Absent'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)  
+			else   
+			(case when inmode='Device' then 'NO:DOUBLEDUTY' else  
+			(case     when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+			and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420 
+			then  
+			(case     when llog.leave_date is null then 'Half Day Present'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'NO'  
+			end)  
+			end)   
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <180 then 
+			(case when outtime is null then  
+			'Absent (Forgot to signout)'  
+			else  
+			(case     when llog.leave_date is null then 'Absent (Less Duty Hour)'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)   
+			end)  
+
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)>=420  
+			then 'NO:PRESENT'  
+			else 'Absent'  
+			end)  
+			end)  
+			end) as absremarks  
+			,alog.tdate,alog.tdate_out as outdate,  
+			hrs.in_start as assignedin,hrs.out_start as assignedout,  
+			alog.intime as actualin,alog.outtime as actualout,
+			datediff(minute,in_start,intime) as indiff,  
+			datediff( minute, (case when datediff(minute,in_start,out_start)<1 then 
+			dateadd(day,1,tdate) else tdate end) + ' ' + out_start,  
+			alog.tdate_out + ' ' + alog.outtime  
+			) as outdiff,  
+			datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) as worked,  
+			wend.DATE as weekend,  
+			wend.emp_id as wendemp  
+			from tbl_org_workinghrs duty  
+			left outer join tbl_emp_attn_log_general alog on duty.sdate = alog.tdate and alog.emp_id = duty.emp_id  
+			left outer join view_emp_info empinfo on empinfo.emp_id = duty.emp_id  
+			left outer join tbl_org_working_hrs hrs on hrs.work_id=alog.workhour_id 
+			left outer join tbl_org_weekend wend on duty.emp_id = wend.emp_id and duty.sdate = wend.DATE 
+			 
+			left outer join Tbl_Emp_ForceDuty fday on fday.emp_id = duty.emp_id and fday.OnDate = duty.sdate
+
+			left outer join tbl_org_leavE_log llog on llog.emp_id = duty.emp_id and llog.leave_date = duty.sdate
+			 and (llog.LEAVE_ID not in (10,9) ) 
+			where (datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<480 or datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) is null)  
+			and   
+			empinfo.status_id = 1 and empinfo.DEPT_ID in (select item from splitString(@deptname, ','))  
+			and sdate between  
+			@sdate and @edate and wend.DATE is null  
+			and  
+			left(  
+			(case     when tdate is null then 
+			(case     when llog.leave_date is null then 'Absent' 
+			else        (case     when llog.taken=1 then 'NO:LEAVE' 
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end) 
+			else 
+			(case when inmode='Device' then 'NO:DOUBLEDUTY' else 
+			(case     when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+			and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420 
+			then  
+			(case     when llog.leave_date is null then 'Half Day Present'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'NO'  
+			end)  
+			end) 
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <180 then 
+			(case when outtime is null then  
+			'Absent (Forgot to signout)'  
+			else  
+			(case     when llog.leave_date is null then 'Absent (Less Duty Hour)' 
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)  
+			end)  
+
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)>=420 
+			then 'NO:PRESENT'  
+			else 'Absent'  
+			end)  
+			end)  
+			end)  
+			,2)<>'NO' 
+		) as maintable 
+		set @tdate = dateadd(day,1,@tdate)    
+		set nocount off  
+		--insert into tmpabsentreport   
+		--select * from #tmpabsentreport order by tdate,dept_name,emp_name  
+		--insert into tmpabsentreport(emp_id,emp_name,dept_name,tdate,worked,remarks) 
+		select distinct emp_id,emp_name,dept_name,tdate,intime,'' as duty_roster,outtime,
+		sum(isnull(worked,0)) as worked,
+		--(case when sum(isnull(worked,0))>= 180 then
+		--'Half Day Present'
+		--else
+		--'absent' end)
+
+		--(case when tdate in(select leave_date from Tbl_Org_Leave_Log where LEAVE_ID in (9,10) and emp_id=@emp_id) then
+		--'LWOP'
+		--else
+		--remarks end) as
+		remarks
+		from #tmpabsentreport 
+		where emp_id = @empId and
+		--tdate not in (select HOLIDAY_DATE from Tbl_Org_Holiday)
+		tdate not in 
+		((select OnDate from Tbl_Emp_ForceDuty where emp_id=@emp_id and ondate between @sdate and @edate))
+		--(select Sub_Day from Tbl_SubWeek where emp_id=@emp_id and Sub_Day between @sdate and @edate))
+		
+		
+		group by emp_id,emp_name,dept_name,tdate,intime,outtime,remarks
+		--HAVING sum(isnull(worked,0)) <420 
+		order by dept_name,emp_id,tdate
+		--select * from tmpabsentreport 
+	end
+	else
+	begin
+		insert into #tmpabsentreport  
+  
+		select emp_id,emp_fullname,emp_fullname,DEPT_NAME,sdate,outdate,assignedin,assignedout,assignedin + '-' + assignedout as dutyin,actualin,actualout,indiff,outdiff,worked,absremarks  
+		from ( 
+			select duty.emp_id,duty.sdate,empinfo.emp_fullname,empinfo.DEPT_NAME,   
+			(case     when tdate is null then                  
+			(case     when llog.leave_date is null then 'Absent'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)  
+
+			else   
+			(case when inmode='Device' then 'NO:DOUBLEDUTY' else  
+			(case     when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+			and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420 
+			then  
+			(case     when llog.leave_date is null then 'Half Day Present'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'NO'  
+			end)  
+			end)   
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <180 then 
+			(case when outtime is null then  
+			'Absent (Forgot to signout)'  
+			else  
+			(case     when llog.leave_date is null then 'Absent (Less Duty Hour)'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)   
+			end)  
+
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)>=420  
+			then 'NO:PRESENT'  
+			else 'Absent'  
+			end)  
+			end)  
+			end) as absremarks  
+			,alog.tdate,alog.tdate_out as outdate,  
+			hrs.in_start as assignedin,hrs.out_start as assignedout,  
+			alog.intime as actualin,alog.outtime as actualout,
+			datediff(minute,in_start,intime) as indiff,  
+			datediff( minute, (case when datediff(minute,in_start,out_start)<1 then 
+			dateadd(day,1,tdate) else tdate end) + ' ' + out_start,  
+			alog.tdate_out + ' ' + alog.outtime  
+			) as outdiff,  
+			datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) as worked,  
+			wend.DATE as weekend,  
+			wend.emp_id as wendemp  
+			from tbl_org_workinghrs duty  
+			left outer join tbl_emp_attn_log_general alog on duty.sdate = alog.tdate and alog.emp_id = duty.emp_id  
+			left outer join view_emp_info empinfo on empinfo.emp_id = duty.emp_id  
+			left outer join tbl_org_working_hrs hrs on hrs.work_id=alog.workhour_id 
+			left outer join tbl_org_weekend wend on duty.emp_id = wend.emp_id and duty.sdate = wend.DATE  
+			left outer join Tbl_Emp_ForceDuty fday on fday.emp_id = duty.emp_id and fday.OnDate = duty.sdate
+			left outer join tbl_org_leavE_log llog on llog.emp_id = duty.emp_id and llog.leave_date = duty.sdate 
+			and (llog.LEAVE_ID not in (10,9) )
+			where (datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<480 or datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) is null)  
+			and   
+			empinfo.status_id = 1 and empinfo.DEPT_ID in (select item from splitString(@deptname, ','))  
+			and sdate between  
+			@sdate and @edate and wend.DATE is null  
+			and  
+			left(  
+			(case     when tdate is null then 
+			(case     when llog.leave_date is null then 'Absent' 
+			else        (case     when llog.taken=1 then 'NO:LEAVE' 
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)  
+			else 
+			(case when inmode='Device' then 'NO:DOUBLEDUTY' else 
+			(case     when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+			and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420 
+			then  
+			(case     when llog.leave_date is null then 'Half Day Present'  
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'NO'  
+			end)  
+			end) 
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <180 then 
+			(case when outtime is null then  
+			'Absent (Forgot to signout)'  
+			else  
+			(case     when llog.leave_date is null then 'Absent (Less Duty Hour)' 
+			else        (case     when llog.taken=1 then 'NO:LEAVE'  
+			when llog.taken=0.5 then 'Half Day Present'  
+			end)  
+			end)  
+			end)  
+			
+			when datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)>=420 
+			then 'NO:PRESENT'  
+			else 'Absent'  
+			end) 
+			 
+			end)  
+			end)  
+			,2)<>'NO' 
+		) as maintable 
+		set @tdate = dateadd(day,1,@tdate)    
+		set nocount off  
+		--insert into tmpabsentreport   
+		--select * from #tmpabsentreport order by tdate,dept_name,emp_name  
+		--insert into tmpabsentreport(emp_id,emp_name,dept_name,tdate,worked,remarks) 
+
+		--select distinct emp_id,emp_name,dept_name,tdate,intime,'' as duty_roster,outtime,sum(isnull(worked,0)) as worked ,(case when sum(isnull(worked,0))>= 180 then
+		--'Half Day Present'
+		--else
+		--'absent' end)
+		--remarks
+		--from #tmpabsentreport 
+
+		select distinct emp_id,emp_name,dept_name,tdate,CONVERT(varchar(8), intime,121) as intime,'' as duty_roster,CONVERT(varchar(8), outtime,121) as outtime,sum(isnull(worked,0)) as worked,
+		--(case when tdate in(select leave_date from Tbl_Org_Leave_Log where LEAVE_ID in (9,10) and emp_id=@emp_id) then
+		--'LWOP'
+		--else
+		--remarks end) as
+		remarks
+		--remarks
+		from #tmpabsentreport 
+		--where 
+		--tdate not in ((select OnDate from Tbl_Emp_ForceDuty where ondate between @sdate and @edate),(select Sub_Day from Tbl_SubWeek where Sub_Day between @sdate and @edate)) 
+		group by emp_id,emp_name,dept_name,tdate,intime,outtime,remarks
+		--HAVING sum(isnull(worked,0)) <420 
+		order by dept_name,emp_id,tdate
+		--select * from tmpabsentreport 
+	end
+end

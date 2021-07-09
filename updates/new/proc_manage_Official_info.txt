@@ -1,0 +1,115 @@
+
+---------------------------------------      
+alter Proc proc_manage_Official_info   
+@deg_id int,
+@HOD_ID int=NULL,           
+@mode_id int,              
+@dept_id int,  
+@branch_id int,  
+@status_id int,  
+@Grade_id int,  
+@emp_id int,              
+@PID int,  
+@usertypeid int,
+@login_id int=@emp_id,
+@login_password varchar(250)='123',
+@pf				varchar(50),
+@cit			varchar(50),
+@ss				varchar(50),
+@pan			varchar(50),
+@bankAc			varchar(50),
+@offEmail		varchar(50),
+@webLogin int
+     
+As              
+SET NOCOUNT ON              
+BEGIN         
+	declare @des varchar(50)
+	declare @Join_Date date
+	declare @did int
+	set @Join_Date=(select EMP_JOINDATE from Tbl_Emp_Info where EMP_ID=@emp_id)          
+	select @des=DEG_NAME from Tbl_Org_Desg where DEG_ID=@deg_id 
+	
+	if exists(select EMP_ID from tbl_emp_off_info where EMP_ID=@emp_id)              
+	BEGIN              
+		update Tbl_Emp_Off_Info              
+		set  
+		DEG_ID=@deg_id,  
+		HOD_ID=@HOD_ID,            
+		MODE_ID=@mode_id,              
+		DEPT_ID=@dept_id,              
+		BRANCH_ID=@branch_id,              
+		STATUS_ID=@status_id,              
+		GRADE=@Grade_id,              
+		Gratuity=Gratuity,
+		usertypeid=@usertypeid,
+		login_id=@login_id,
+		login_password=@login_password,
+		cit_number=@cit,
+		Social_Security = @ss,
+		pf_number=@pf,
+		epan_number=@pan,
+		bankAC=@bankAc,
+		OFFEMAIL=@offEmail,
+		enable_web_login=@webLogin
+		     
+		 where EMP_ID=@emp_id 
+	    
+	  
+	 if exists(select 1 from TBL_Emp_HOP where Emp_Id=@emp_id)                
+	 begin           
+		 update TBL_Emp_HOP set PSG_CODE=@des where Emp_Id=@emp_id          
+		 update TBL_Emp_HOP_HoldDetail set StructCode=@des where Emp_Id=@emp_id          
+	 end                   
+	 END               
+	else              
+	 BEGIN              
+	 insert into Tbl_Emp_Off_Info (            
+	  PID, 
+	  EMP_TRANMODE,
+	  EMP_ID,  
+	  DEG_ID,  
+	  HOD_ID,
+	  MODE_ID,  
+	  DEPT_ID,  
+	  BRANCH_ID,  
+	  STATUS_ID,  
+	  GRADE,  
+	  usertypeid,
+	  login_id,
+      login_password,
+	  pf_number,
+	  cit_number,
+	  Social_Security,
+	  epan_number,
+	  bankAC,
+	  OFFEMAIL,
+	  enable_web_login 
+	)
+              
+	 values( @PID,  
+	 'JOIN',  
+	 @emp_id,  
+	 @deg_id,  
+	 @HOD_ID,
+	 @mode_ID,  
+	 @dept_id,  
+	 @branch_id,  
+	 @status_id,  
+	 @GRADE_id,            
+	 @usertypeid,
+	 @login_id,
+	 @login_password,
+	 @pf,
+	 @cit,
+	 @ss,
+	 @pan,
+	 @bankAc,
+	 @offEmail,
+	 @webLogin 
+	) 
+
+	          
+	                     
+	 END              
+END 

@@ -1,0 +1,18 @@
+-- exec proc_subPh_cancel @HolidayDate = '2020-02-23', @empId = 4
+create procedure proc_subPh_cancel
+@empId int,
+@HolidayDate date
+
+AS
+BEGIN
+  
+  DECLARE @remarks varchar(500)
+  DECLARE @ondate date
+
+  SET @remarks = (select HOLIDAY_NAME from Tbl_Org_Holiday WHERE HOLIDAY_DATE = @HolidayDate)
+  SET @ondate= (select HOLIDAY_DATE from Tbl_Org_Holiday where HOLIDAY_DATE = @HolidayDate )
+  
+  update Tbl_Emp_ForceDuty set IsTaken = 0, EarnPH = 0, Remarks = @remarks, OnDate=@ondate where emp_id = @empId and HoliDay_Name = @remarks
+END
+
+

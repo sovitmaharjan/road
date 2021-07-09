@@ -1,0 +1,134 @@
+--exec SubsituteLeaveLapse'2020-11-01', '2020-11-17', 0,0
+ALTER PROCEDURE Subsituteleavelapse
+@startDate DATE,
+@endDate   DATE,
+@deptId    INT = 0,
+@empId     INT = 0
+AS
+  BEGIN
+      IF( @deptId = 0 )
+        BEGIN
+            SELECT t.*,vei.emp_fullname,dept_name
+            FROM   (SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on PH [' + ef.holiday_name + ']'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_emp_forceduty ef
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON ef.emp_id = lg.emp_id
+                                      AND ef.phdate = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate
+                           AND ef.earnph = 0
+                    UNION
+                    SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on Weekend'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_org_weekend wee
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON wee.emp_id = lg.emp_id
+                                      AND wee.date = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate) AS t
+                   INNER JOIN view_emp_info vei
+                           ON vei.emp_id = t.emp_id
+            ORDER  BY t.tdate,
+                      t.emp_id ASC
+        END
+      ELSE IF( @deptId != 0
+          AND @empId = 0 )
+        BEGIN
+            SELECT t.*,vei.emp_fullname,dept_name
+            FROM   (SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on PH [' + ef.holiday_name + ']'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_emp_forceduty ef
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON ef.emp_id = lg.emp_id
+                                      AND ef.phdate = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate
+                           AND ef.earnph = 0
+                    UNION
+                    SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on Weekend'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_org_weekend wee
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON wee.emp_id = lg.emp_id
+                                      AND wee.date = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate) AS t
+                   INNER JOIN view_emp_info vei
+                           ON vei.emp_id = t.emp_id
+            WHERE  t.emp_id IN (SELECT emp_id
+                                FROM   view_emp_info
+                                WHERE  dept_id = @deptId)
+            ORDER  BY t.tdate,
+                      t.emp_id ASC
+        END
+      ELSE
+        BEGIN
+            SELECT t.*,vei.emp_fullname,dept_name
+            FROM   (SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on PH [' + ef.holiday_name + ']'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_emp_forceduty ef
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON ef.emp_id = lg.emp_id
+                                      AND ef.phdate = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate
+                           AND ef.earnph = 0
+                    UNION
+                    SELECT lg.emp_id,
+                           lg.tdate,
+                           lg.intime,
+                           lg.outtime,
+                           'Worked on Weekend'
+                           AS
+                           Remark,
+                           Datediff(day, Getdate(), Dateadd(day, 90, lg.tdate))
+                           AS
+                           dayLeft
+                    FROM   tbl_org_weekend wee
+                           INNER JOIN tbl_emp_attn_log_general lg
+                                   ON wee.emp_id = lg.emp_id
+                                      AND wee.date = lg.tdate
+                    WHERE  lg.tdate BETWEEN @startDate AND @endDate) AS t
+                   INNER JOIN view_emp_info vei
+                           ON vei.emp_id = t.emp_id
+            WHERE  t.emp_id = @empId
+            ORDER  BY t.tdate,
+                      t.emp_id ASC
+        END
+  END 

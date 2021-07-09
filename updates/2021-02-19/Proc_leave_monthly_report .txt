@@ -1,0 +1,64 @@
+
+
+
+
+--exec Proc_leave_monthly_report '2020-01-01','2021-02-19',10,10,0,0
+CREATE     Proc Proc_leave_monthly_report (@sdate datetime,@edate datetime,@EMP_ID int=0,@LEAVE_ID int=0,@BRANCH_ID int=0,@DEPT_ID int=0)
+as
+set nocount on
+begin
+
+declare @total float
+if @LEAVE_ID!=10
+begin
+begin
+(
+select @total=sum(TAKEN) from tbl_org_leave_log 
+inner join  view_emp_info s1
+ on s1.EMP_ID=tbl_org_leave_log.EMP_ID
+ inner join  view_emp_info s2 on s2.EMP_ID=tbl_org_leave_log.ApprovedBy
+inner join tbl_org_leave_info on tbl_org_leave_log.LEAVE_ID=tbl_org_leave_info.LEAVE_ID 
+where LEAVE_DATE between @sdate and @edate  and tbl_org_leave_log.LEAVE_ID!=10
+and 
+cast(tbl_org_leave_log.EMP_ID as nvarchar(10)) like (case when @EMP_ID=0 then '%' else cast(@EMP_ID as nvarchar(10) )end)
+and cast(tbl_org_leave_info.LEAVE_ID as nvarchar(10)) like (case when @LEAVE_ID=0 then '%' else cast(@LEAVE_ID as nvarchar(10))end)
+and cast(s1.BRANCH_ID as nvarchar(10)) like (case when @BRANCH_ID=0 then '%' else cast(@BRANCH_ID as nvarchar(10))end)
+and cast(s1.DEPT_ID as nvarchar(10)) like (case when @DEPT_ID=0 then '%' else cast(@DEPT_ID as nvarchar(10))end)
+)end
+
+select total=@total,s1.BRANCH_NAME,s1.DEPT_NAME,s1.EMP_FULLNAME,LEAVE_NAME,TAKEN as DAYS,LEAVE_DATE,REMARKS,s2.EMP_FULLNAME as ApprovedBy,s1.BRANCH_ID,s1.DEPT_ID from tbl_org_leave_log 
+inner join  view_emp_info s1
+ on s1.EMP_ID=tbl_org_leave_log.EMP_ID
+ inner join  view_emp_info s2 on s2.EMP_ID=tbl_org_leave_log.ApprovedBy
+inner join tbl_org_leave_info on tbl_org_leave_log.LEAVE_ID=tbl_org_leave_info.LEAVE_ID 
+where LEAVE_DATE between @sdate and @edate  and tbl_org_leave_log.LEAVE_ID!=10
+and 
+cast(tbl_org_leave_log.EMP_ID as nvarchar(10)) like (case when @EMP_ID=0 then '%' else cast(@EMP_ID as nvarchar(10) )end)
+and cast(tbl_org_leave_info.LEAVE_ID as nvarchar(10)) like (case when @LEAVE_ID=0 then '%' else cast(@LEAVE_ID as nvarchar(10))end)
+and cast(s1.BRANCH_ID as nvarchar(10)) like (case when @BRANCH_ID=0 then '%' else cast(@BRANCH_ID as nvarchar(10))end)
+and cast(s1.DEPT_ID as nvarchar(10)) like (case when @DEPT_ID=0 then '%' else cast(@DEPT_ID as nvarchar(10))end)
+
+order BY s1.BRANCH_NAME,s1.DEPT_NAME
+end
+else
+begin
+select 1 as total,s1.BRANCH_NAME,s1.DEPT_NAME,s1.EMP_FULLNAME,LEAVE_NAME,TAKEN as DAYS,LEAVE_DATE,
+sw.Week_Day_Remark as REMARKS,s2.EMP_FULLNAME as ApprovedBy,s1.BRANCH_ID,s1.DEPT_ID from tbl_org_leave_log lg 
+inner join  view_emp_info s1 on lg.EMP_ID=s1.EMP_ID
+ inner join  view_emp_info s2 on s2.EMP_ID=lg.ApprovedBy
+ inner join Tbl_SubWeek sw on lg.Leave_Date=sw.Sub_Day and sw.Emp_ID=lg.Emp_ID
+inner join tbl_org_leave_info on tbl_org_leave_info.LEAVE_ID=lg.LEAVE_ID 
+where lg.Leave_Date between @sdate and @edate  and lg.LEAVE_ID=10
+and 
+cast(lg.EMP_ID as nvarchar(10)) like (case when @EMP_ID=0 then '%' else cast(@EMP_ID as nvarchar(10) )end)
+and cast(tbl_org_leave_info.LEAVE_ID as nvarchar(10)) like (case when @LEAVE_ID=0 then '%' else cast(@LEAVE_ID as nvarchar(10))end)
+and cast(s1.BRANCH_ID as nvarchar(10)) like (case when @BRANCH_ID=0 then '%' else cast(@BRANCH_ID as nvarchar(10))end)
+and cast(s1.DEPT_ID as nvarchar(10)) like (case when @DEPT_ID=0 then '%' else cast(@DEPT_ID as nvarchar(10))end)
+
+end
+end
+
+
+
+
+

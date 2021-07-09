@@ -1,0 +1,1 @@
+update Tbl_Emp_Off_Info set enable_web_login = 1 

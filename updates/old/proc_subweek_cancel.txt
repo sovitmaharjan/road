@@ -1,0 +1,20 @@
+-- exec proc_subweek_cancel @date = '2020-02-23', @empId = 4
+create procedure proc_subweek_cancel
+@date date, 
+@empId int 
+as
+begin
+  --declare @date date
+  --set @date = '2020-01-26'
+  --declare @empId int
+  --set @empId = 4
+  declare @weekDay date
+  declare @sNo int
+  set @weekday = (select Week_Day from Tbl_SubWeek where Sub_Day = @date and Emp_ID = @empId)
+  set @sNo = (select SNo from Tbl_Org_Leave_Log where Leave_Date = @date and Emp_ID = @empId)
+  --select @weekDay
+  --select @sNo
+  delete from Tbl_Org_Leave_Log where SNo = @sNo
+  delete from tbl_subweek where EMP_ID = @empId and Sub_Day = @date
+  update Tbl_Org_WeekEnd set Date = @weekDay where EMP_ID = @empId and DATE = @date
+end

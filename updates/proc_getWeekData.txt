@@ -1,0 +1,26 @@
+create proc proc_getWeekData
+(
+@date_start date,
+@date_end date
+)
+as begin
+declare @date date
+set @date=@date_start
+create table #weekdate
+(
+Week_Id int,
+Week_Days varchar(15),
+WeekDate  varchar(10)
+)
+while @date <= @date_end      
+	begin
+	insert into #weekdate
+	select DATEPART(WEEKDAY, @date) as Week_Id,DATENAME(WEEKDAY, @date) as Week_Days,convert(varchar(10),@date)  
+	set @date=dateadd(day,1,@date)              
+	end
+	select * from #weekdate
+	drop table #weekdate
+end
+
+
+--exec proc_getWeekData '2021-01-01','2021-01-30'

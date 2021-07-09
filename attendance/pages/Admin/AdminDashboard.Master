@@ -1,0 +1,229 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="AdminDashboard.master.cs" Inherits="attendance.pages.Admin.AdminDashboard" %>
+
+<!DOCTYPE html>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title>Avighna Attendance</title>
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="../../Assets/images/favicon.ico" />
+
+    <!-- DataTables -->
+    <link href="../../Assets/plugins/datatables/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <link href="../../Assets/plugins/datatables/dataTables.bootstrap.min.css" rel="stylesheet" />
+
+
+    <!-- App css -->
+    <link href="../../Assets/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="../../Assets/css/core.css" rel="stylesheet" />
+    <link href="../../Assets/css/components.css" rel="stylesheet" />
+    <link href="../../Assets/css/icons.css" rel="stylesheet" />
+    <link href="../../Assets/css/pages.css" rel="stylesheet" />
+    <link href="../../Assets/css/menu.css" rel="stylesheet" />
+    <link href="../../Assets/css/responsive.css" rel="stylesheet" />
+    <link href="../../Assets/plugins/switchery/switchery.min.css" rel="stylesheet" />
+    <script src="../../Assets/nepaliDatePicker/js/bootstrap.min.js"></script>
+
+    <script src="../../Assets/js/modernizr.min.js"></script>
+    <script src="../../Assets/js/jquery.min.js"></script>
+
+    <!-- Sweet Alert -->
+    <link href="../../Assets/plugins/bootstrap-sweetalert/sweet-alert.css" rel="stylesheet" />
+    <script src="../../Assets/plugins/bootstrap-sweetalert/sweet-alert.min.js"></script>
+    <script src="../../Assets/pages/jquery.sweet-alert.init.js"></script>
+
+</head>
+<body class="fixed-left">
+
+    <!-- Loader -->
+    <div id="preloader">
+        <div id="status">
+            <div class="spinner">
+                <div class="spinner-wrapper">
+                    <div class="rotator">
+                        <div class="inner-spin"></div>
+                        <div class="inner-spin"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Begin page -->
+    <div id="wrapper">
+        <!-- Top Bar Start -->
+        <div class="topbar">
+            <!-- LOGO -->
+            <div class="topbar-left">
+                <a href="index.html" class="logo"><span>Avighna</span><i class="mdi mdi-cube"></i></a>
+            </div>
+
+            <!-- Button mobile view to collapse sidebar menu -->
+            <div class="navbar navbar-default" role="navigation">
+                <div class="container">
+                    <!-- Navbar-left -->
+                    <ul class="nav navbar-nav navbar-left">
+                        <li>
+                            <button class="button-menu-mobile open-left waves-effect waves-light">
+                                <i class="mdi mdi-menu"></i>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <!-- Right(Notification) -->
+                    <ul class="nav navbar-nav navbar-right">
+                        <li class="dropdown user-box">
+                            <a href=" " class="dropdown-toggle waves-effect waves-light user-link" data-toggle="dropdown" aria-expanded="true">
+                                <img src="http://avighnatechnology.com/images/shikesh.png" alt="user-img" class="img-circle user-img"/>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right user-list notify-list">
+                                <li>
+                                    <h5>Hi</h5>
+                                </li>
+
+                                <li><a href="../ChangePassword.aspx"><i class="ti-key m-r-5"></i>Change Password</a></li>
+                                <li><a href="javascript:void(0)"><i class="ti-lock m-r-5"></i>Lock screen</a></li>
+                                <li><a href="../../Logout.aspx"><i class="ti-power-off m-r-5"></i>Logout</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                    <!-- end navbar-right -->
+
+                </div>
+                <!-- end container -->
+            </div>
+            <!-- end navbar -->
+        </div>
+        <!-- Top Bar End -->
+
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left side-menu">
+            <div class="sidebar-inner slimscrollleft">
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <ul>
+
+                        <li>
+                            <a href="AdminDashboard" class="waves-effect"><i class="mdi mdi-view-dashboard"></i><span class="badge badge-success pull-right"></span><span>Dashboard </span></a>
+                        </li>
+                        <li>
+                            <a href="AboutClient" class="waves-effect"><i class="mdi mdi-information"></i><span class="badge badge-success pull-right"></span><span>About Client </span></a>
+                        </li>                     
+
+                        <li>
+                            <a href="MainMenu" class="waves-effect"><i class="mdi mdi-table-large"></i><span class="badge badge-success pull-right"></span><span>Menu List </span></a>
+                        </li>
+
+                        <li>
+                            <a href="Activation" class="waves-effect"><i class="mdi mdi-key"></i><span class="badge badge-success pull-right"></span><span>Activation </span></a>
+                        </li>
+                        <li>
+                            <a href="AboutUs" class="waves-effect"><i class="mdi mdi-information"></i><span class="badge badge-success pull-right"></span><span>AboutUs </span></a>
+                        </li> 
+
+
+                    </ul>
+                </div>
+                <!-- Sidebar -->
+                <div class="clearfix"></div>
+
+                <div class="help-box">
+                    <h5 class="text-muted m-t-0">For Help ?</h5>
+                    <p class="">
+                        <span class="text-dark"><i class="mdi mdi-gmail"></i><b>Email :</b></span>
+                        <br />
+                        <asp:Label ID="lblEmail1" runat="server" Text=""></asp:Label>
+                        <br />
+                        <asp:Label ID="lblEmail2" runat="server" Text=""></asp:Label>
+                    </p>
+                    <p class="m-b-0">
+                        <span class="text-dark"><i class="mdi mdi-phone-classic"></i><b>Call :</b></span>
+                        <br />
+                        <asp:Label ID="lblConatct1" runat="server" Text=""></asp:Label>
+                        <br />
+                        <asp:Label ID="lblConatct2" runat="server" Text=""></asp:Label>
+                    </p>
+                </div>
+
+            </div>
+            <!-- Sidebar -left -->
+
+        </div>
+        <!-- Left Sidebar End -->
+
+
+
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="content-page">
+            <!-- Start content -->
+            <asp:ContentPlaceHolder ID="ContentPlaceHolder" runat="server"></asp:ContentPlaceHolder>
+
+            <footer class="footer text-right">
+                <asp:Label ID="lblDate" runat="server" Text=""></asp:Label>
+                @
+                <asp:HyperLink ID="HyperLink" Target="_blank" runat="server"></asp:HyperLink>
+                ©
+                <asp:HyperLink ID="HyperLinkAdmin" Target="_blank" runat="server"></asp:HyperLink>
+            </footer>
+
+        </div>
+
+
+        <!-- ============================================================== -->
+        <!-- End Right content here -->
+        <!-- ============================================================== -->
+
+    </div>
+    <!-- END wrapper -->
+
+    <script>
+        var resizefunc = [];
+    </script>
+    <!-- jQuery  -->
+    <script src="../../Assets/js/jquery.min.js"></script>
+    <script src="../../Assets/js/bootstrap.min.js"></script>
+    <script src="../../Assets/js/detect.js"></script>
+    <script src="../../Assets/js/fastclick.js"></script>
+    <script src="../../Assets/js/jquery.blockUI.js"></script>
+    <script src="../../Assets/js/waves.js"></script>
+    <script src="../../Assets/js/jquery.slimscroll.js"></script>
+    <script src="../../Assets/js/jquery.scrollTo.min.js"></script>
+    <script src="../../Assets/plugins/switchery/switchery.min.js"></script>
+
+    <!-- DataTables -->
+    <script src="assets/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="assets/plugins/datatables/dataTables.bootstrap.js"></script>
+
+    <!-- Counter js  -->
+    <script src="assets/plugins/waypoints/jquery.waypoints.min.js"></script>
+    <script src="assets/plugins/counterup/jquery.counterup.min.js"></script>
+
+    <!-- Form Pickers  -->
+    <script src="assets/plugins/timepicker/bootstrap-timepicker.js"></script>
+    <script src="assets/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="assets/plugins/nepaliDatePicker/nepali.datepicker.v2.2.min.js"></script>
+
+    <!-- App js -->
+    <script src="assets/js/jquery.core.js"></script>
+    <script src="assets/js/jquery.app.js"></script>
+
+
+    <script>
+
+        $(document).ready(function () {
+            $('#datatable').dataTable();
+        });
+
+    </script>
+
+</body>
+
+</html>

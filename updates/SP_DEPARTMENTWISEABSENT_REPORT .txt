@@ -1,0 +1,220 @@
+--exec SP_DEPARTMENTWISEABSENT_REPORT @sdate='2020-10-25', @edate='2020-10-25', @deptname='13',@flag=0, @empId = 0
+
+CREATE proc SP_DEPARTMENTWISEABSENT_REPORT
+@sdate datetime,  
+@edate datetime,  
+@deptname as varchaR(100)='',  
+@flag int=0 ,
+@empId int = 0
+as  
+begin  
+	set nocount on  
+	create table #tmpabsentreport (   
+		emp_id int,  
+		emp_name varchaR(500), 
+		empname_id varchar(500), 
+		dept_name varchaR(500),
+		dept_id int,  
+		tdate date,  
+		outdate date,  
+		duty_in varchar(15),  
+		duty_out varchar(15),  
+		duty_roster varchar(50),  
+		intime varchar(15),  
+		outtime varchar(15),  
+		indiff int,  
+		outdiff int, 
+		workedMin int, 
+		worked varchar(500) ,  
+		remarks varchar(500) 
+	) 
+	declare @date date
+	set @date=@sdate
+	if(@empId = 0)
+	begin
+		while @date <= @edate 
+		begin
+		insert into #tmpabsentreport 
+		select duty.emp_id,empinfo.emp_fullname,
+		empinfo.EMP_FULLNAME+' ('+convert(varchar,duty.emp_id)+')',
+		empinfo.DEPT_NAME,empinfo.dept_id,duty.sdate,
+		alog.tdate_out as outdate,  
+		hrs.in_start as duty_in,hrs.out_start as duty_out,  
+		hrs.in_start + '-' +hrs.out_start as duty_roster,   
+		alog.intime,
+		alog.outtime,  
+		datediff(minute,in_start,intime) as indiff,  
+		datediff( minute, (case when datediff(minute,in_start,out_start)<1 then  
+		dateadd(day,1,tdate) else tdate end) + ' ' + out_start,  
+		alog.tdate_out + ' ' + alog.outtime  
+		) as outdiff,  
+		datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) as workedMin,
+		dbo.MinutesToDuration(isnull(datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime),0)) as worked,  
+		(CASE
+        WHEN alog.tdate is not null 
+        THEN
+            CASE
+                WHEN datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+				and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420
+                THEN
+                    CASE 
+                        WHEN llog.leave_date is null
+                        THEN 'Worked Half Day'
+                        --ELSE calculation2
+                    END
+                ELSE
+                    CASE 
+                        WHEN datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <=180
+                        THEN 
+							CASE 
+							WHEN llog.leave_date is null
+							THEN 'Short Duty'
+							END
+                        ELSE 
+							CASE 
+							WHEN outtime is null
+							THEN 'Absent (Forgot to signout)'
+							ELSE
+							'Absent'
+							END
+                    END
+            END
+        ELSE 
+            CASE 
+                WHEN alog.tdate is null  
+                THEN 
+                    CASE
+                        WHEN llog.leave_date is null 
+                        THEN 'Absent'
+                       -- ELSE calculation6
+                    END
+                --ELSE
+                --    CASE
+                --        WHEN condition2 
+                --        THEN calculation7
+                --        ELSE calculation8
+                --    END
+            END            
+    END ) AS remarks
+		from tbl_org_workinghrs duty  
+		left outer join tbl_emp_attn_log_general alog on duty.sdate = alog.tdate and alog.emp_id = duty.emp_id  
+		left outer join view_emp_info empinfo on empinfo.emp_id = duty.emp_id  
+		left outer join tbl_org_working_hrs hrs on hrs.work_id=alog.workhour_id  
+		left outer join tbl_org_weekend wend on duty.emp_id = wend.emp_id and duty.sdate = wend.DATE 
+		left outer join tbl_org_leavE_log llog on llog.emp_id = duty.emp_id and llog.leave_date = duty.sdate  
+		left outer join Tbl_Emp_ForceDuty fduty on fduty.Emp_ID=duty.emp_id and fduty.OnDate = duty.sdate 
+		where 
+		(datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420
+		or datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) is null)  
+		and    
+		empinfo.status_id = 1 
+		--and empinfo.emp_id=11
+		and empinfo.DEPT_ID in (select item from splitString(@deptname, ','))  
+  
+		and sdate=@date and wend.DATE is null  
+ 
+		set @date=dateadd(day,1,@date)
+		end 
+		select * from #tmpabsentreport 
+		--where 
+		--tdate not in (select fd.OnDate from Tbl_Emp_ForceDuty fd 
+		--inner join view_emp_info ve on fd.Emp_ID=ve.emp_id
+		--where fd.ondate between @sdate and @edate and ve.DEPT_ID in (select item from splitString(@deptname, ',')))
+		order by tdate asc
+		
+	end
+	else
+	begin
+		while @date <= @edate 
+		begin
+		insert into #tmpabsentreport 
+		select duty.emp_id,empinfo.emp_fullname,
+		empinfo.EMP_FULLNAME+' ('+convert(varchar,duty.emp_id)+')',
+		empinfo.DEPT_NAME,empinfo.dept_id,duty.sdate,
+		alog.tdate_out as outdate,  
+		hrs.in_start as duty_in,hrs.out_start as duty_out,  
+		hrs.in_start + '-' +hrs.out_start as duty_roster,   
+		alog.intime,
+		alog.outtime,  
+		datediff(minute,in_start,intime) as indiff,  
+		datediff( minute, (case when datediff(minute,in_start,out_start)<1 then  
+		dateadd(day,1,tdate) else tdate end) + ' ' + out_start,  
+		alog.tdate_out + ' ' + alog.outtime  
+		) as outdiff,  
+		datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) as workedMin,
+		dbo.MinutesToDuration(isnull(datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime),0)) as worked,  
+		(CASE
+        WHEN alog.tdate is not null 
+        THEN
+            CASE
+                WHEN datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) >= 180 
+				and datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420
+                THEN
+                    CASE 
+                        WHEN llog.leave_date is null
+                        THEN 'Worked Half Day'
+                        --ELSE calculation2
+                    END
+                ELSE
+                    CASE 
+                        WHEN datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) <=180
+                        THEN 
+							CASE 
+							WHEN llog.leave_date is null
+							THEN 'Short Duty'
+							END
+                        ELSE 
+							CASE 
+							WHEN outtime is null
+							THEN 'Absent (Forgot to signout)'
+							ELSE
+							'Absent'
+							END
+                    END
+            END
+        ELSE 
+            CASE 
+                WHEN alog.tdate is null  
+                THEN 
+                    CASE
+                        WHEN llog.leave_date is null 
+                        THEN 'Absent'
+                       -- ELSE calculation6
+                    END
+                ELSE
+                    CASE
+                        WHEN fduty.OnDate is null 
+                        THEN 'Absent'
+                       -- ELSE calculation8
+                    END
+            END            
+    END ) AS remarks
+		from tbl_org_workinghrs duty  
+		left outer join tbl_emp_attn_log_general alog on duty.sdate = alog.tdate and alog.emp_id = duty.emp_id  
+		left outer join view_emp_info empinfo on empinfo.emp_id = duty.emp_id  
+		left outer join tbl_org_working_hrs hrs on hrs.work_id=alog.workhour_id  
+		left outer join tbl_org_weekend wend on duty.emp_id = wend.emp_id and duty.sdate = wend.DATE 
+		left outer join tbl_org_leavE_log llog on llog.emp_id = duty.emp_id and llog.leave_date = duty.sdate  
+		left outer join Tbl_Emp_ForceDuty fduty on fduty.Emp_ID=duty.emp_id and fduty.OnDate = duty.sdate   
+		where 
+		(datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime)<420
+		or datediff(minute,tdate + ' ' + intime,tdate_out + ' ' + outtime) is null)  
+		--and    
+		--empinfo.status_id = 1 
+		and empinfo.emp_id=@empId
+		--and empinfo.DEPT_ID in (select item from splitString(@deptname, ','))  
+  
+		and sdate=@date and wend.DATE is null  
+ 
+		set @date=dateadd(day,1,@date)
+		end 
+		select * from #tmpabsentreport 
+		--where 
+		--tdate not in (select OnDate from Tbl_Emp_ForceDuty 
+		--where ondate between @sdate and @edate and emp_id=@empId) 
+		order by dept_id,tdate asc 
+	end
+
+	drop table #tmpabsentreport
+	set nocount off 
+end

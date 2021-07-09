@@ -1,0 +1,72 @@
+alter       Proc proc_emp_list_Null 
+@branch_id int,
+@StartDate DATE,          
+@EndDate DATE         
+as  
+begin 
+ declare @flag as VARchar(5),                                         
+  @Remarks varchar(200),                        
+  @inRemarks varchar(200),                                                     
+  @date as datetime,                    
+  @Branch varchar(30),                                  
+  @Department varchar(30),                                                      
+  @EMP_FULLNAME varchar(50),
+  @Aflag int 
+  set @Aflag=0
+  if (@Aflag=0)                                     
+  begin                                      
+  truncate table Tbl_EMP_INOUT                                       
+  --truncate table rpt_exception_data                                      
+  end                                       
+  begin   
+  set @date=@StartDate                                       
+  while @date <= @EndDate                                        
+  begin 
+insert into Tbl_EMP_INOUT(EMP_ID,EMP_FULLNAME,BRANCH_NAME,BRANCH_ID,TDATE,InTime,OutTime,InTime1,OutTime1)
+select al.EMP_ID,al.emp_Fullname as EMP_FULLNAME,al.BRANCH_NAME,al.BRANCH_ID,al.TDATE,al.INTIME,al.OUTTIME,al.InTime1,al.OutTime1
+from                                      
+  ( 
+SELECT  llog.emp_id as Emp_Id,empinfo.emp_Fullname as EMP_FULLNAME ,
+max(empinfo.BRANCH_NAME) as 'BRANCH_NAME', 
+max(empinfo.BRANCH_ID) as 'BRANCH_ID',tdate, 
+----shift 1                                                                 
+max(CASE Counter WHEN 1 THEN tdate_out ELSE tdate END) AS TDate_Out,                              
+max(CASE Counter WHEN 1 THEN intime ELSE '' END) AS InTime,                              
+max(CASE Counter WHEN 1 THEN ISNULL(outtime,'') ELSE '' END) AS OutTime, 
+--shift 2                               
+max(CASE Counter WHEN 2 THEN TDate_Out ELSE tdate END) AS TDate_Out1, 
+max(CASE Counter WHEN 2 THEN intime ELSE '' END) AS InTime1,                                                                                                                  
+max(CASE Counter WHEN 2 THEN ISNULL(outtime,'') ELSE '' END) AS OutTime1,  
+--shift 3
+max(CASE Counter WHEN 3 THEN TDate_Out ELSE tdate END) AS TDate_Out2,                              
+max(CASE Counter WHEN 3 THEN intime ELSE '' END) AS InTime2,                                                         
+max(CASE Counter WHEN 3 THEN ISNULL(outtime,'') ELSE '' END) AS OutTime2, 
+
+max(CASE Counter WHEN 4 THEN TDate_Out ELSE tdate END) AS TDate_Out3,                              
+max(CASE Counter WHEN 4 THEN intime ELSE '' END) AS InTime3,                                                           
+max(CASE Counter WHEN 4 THEN ISNULL(outtime,'') ELSE '' END) AS OutTime3
+
+from Tbl_Emp_Attn_Log_General llog                                       
+  inner join tbl_org_working_hrs wrk on llog.workhour_id = wrk.work_id                                       
+  inner join view_emp_info empinfo on empinfo.EMP_ID=llog.EMP_ID                       
+  --inner join Tbl_Org_WorkingHrs whrs on llog.EMP_ID=whrs.Emp_Id                                     
+  where tdate=@date AND empinfo.STATUS_ID=1-- and empinfo.BRANCH_ID=@branch_id
+ and   llog.INTIME is not null and llog.OUTTIME is null 
+ and cast(empinfo.BRANCH_ID as nvarchar(10)) like (case when @branch_id=0 then '%' else cast(@branch_id as nvarchar(10))end)                                     
+
+GROUP BY llog.emp_id,empinfo.emp_Fullname,tdate) as al                      
+set @date=dateadd(day,1,@date)                                
+  end 
+  end  
+  if @branch_id =0
+  begin
+select * from Tbl_EMP_INOUT order by BRANCH_ID asc
+  end
+  else 
+  begin
+select * from Tbl_EMP_INOUT where BRANCH_ID=@branch_id order by emp_id asc
+  end
+end
+
+
+--exec proc_emp_list_Null 0,'2017-12-16','2017-12-16'

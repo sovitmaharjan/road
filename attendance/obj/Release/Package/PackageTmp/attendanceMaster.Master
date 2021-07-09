@@ -1,0 +1,827 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="attendanceMaster.Master.cs" Inherits="attendance.attendanceMaster" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <style type="text/css">
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: black;
+            z-index: 99;
+            opacity: 0.8;
+            filter: alpha(opacity=80);
+            -moz-opacity: 0.8;
+            min-height: 100%;
+            width: 100%;
+        }
+
+        .loading {
+            font-family: Arial;
+            font-size: 10pt;
+            border: 5px solid #67CFF5;
+            width: 200px;
+            height: 100px;
+            display: none;
+            position: fixed;
+            background-color: White;
+            z-index: 999;
+        }
+    </style>
+
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc." />
+    <meta name="author" content="Avighna Technology" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="<%=this.baseUrl%>/assets/images/favicon.ico" />
+    <!-- App title -->
+    <title><%=this.projectName%> || Avighna Technology  </title>
+
+    <!-- Pickers -->
+    <link href="<%=this.baseUrl%>/assets/plugins/timepicker/bootstrap-timepicker.min.css" rel="stylesheet" />
+    <link href="<%=this.baseUrl%>/assets/plugins/bootstrap-colorpicker/css/bootstrap-colorpicker.min.css" rel="stylesheet" />
+    <link href="<%=this.baseUrl%>/assets/plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+    <link href="<%=this.baseUrl%>/assets/plugins/clockpicker/css/bootstrap-clockpicker.min.css" rel="stylesheet" />
+    <link href="<%=this.baseUrl%>/assets/plugins/bootstrap-daterangepicker/daterangepicker.css" rel="stylesheet" />
+
+    <link href="<%=this.baseUrl%>/assets/nepaliDatePicker/nepali.datepicker.v2.2.min.css" rel="stylesheet" />
+    <!-- Jquery filer css -->
+    <link href="<%=this.baseUrl%>/assets/plugins/jquery.filer/css/jquery.filer.css" rel="stylesheet" />
+    <link href="<%=this.baseUrl%>/assets/plugins/jquery.filer/css/themes/jquery.filer-dragdropbox-theme.css" rel="stylesheet" />
+
+    <!-- DataTables -->
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/buttons.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/fixedHeader.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/responsive.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/scroller.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.colVis.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/plugins/datatables/fixedColumns.dataTables.min.css" rel="stylesheet" type="text/css" />
+
+    <!-- App css -->
+    <link href="<%=this.baseUrl%>/assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/core.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/components.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/icons.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/pages.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/menu.css" rel="stylesheet" type="text/css" />
+    <link href="<%=this.baseUrl%>/assets/css/responsive.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="<%=this.baseUrl%>/assets/plugins/switchery/switchery.min.css" />
+    <script src="<%=this.baseUrl%>/assets/js/jquery-3.4.1.js"></script>
+
+    <!-- HTML5 Shiv and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+
+    <script src="<%=this.baseUrl%>/assets/js/modernizr.min.js"></script>
+
+    <!-- Sweet Alert-->
+    <script src="<%=this.baseUrl%>/assets/sweetalert.js"></script>
+
+
+    <%--for Extra header in report--%>
+    <style type="text/css">
+        .header {
+            font-family: Calibri;
+            background-color: #00BCD4;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+        }
+        .header1{
+            font-family: Calibri;
+            background-color: #f1cc1d;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+        }
+        .header2{
+            font-family: Calibri;
+            background-color: #ff6a00;
+            color: white;
+            text-align: center;
+            font-size: 16px;
+        }
+        .name{
+            font-family: Calibri;
+            /*background-color: #0D4;*/
+            color: black;
+            text-align: center;
+            font-size: 18px;
+        }
+    </style>
+
+
+</head>
+
+
+<body class="fixed-left">
+
+    <!-- Loader -->
+    <div id="preloader">
+        <div id="status">
+            <div class="spinner">
+                <div class="spinner-wrapper">
+                    <div class="rotator">
+                        <div class="inner-spin"></div>
+                        <div class="inner-spin"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- Top Bar Start -->
+        <div class="topbar">
+
+            <!-- LOGO -->
+            <div class="topbar-left">
+                <a href="<%=this.baseUrl%>/dashboard" class="logo"><span><%=this.projectName%>  </span><i class="mdi mdi-cube"></i></a>
+                <!-- Image logo -->
+                <!--<a href="index.html" class="logo">-->
+                <!--<span>-->
+                <!--<img src="<%=this.baseUrl%>/assets/images/logo.png" alt="" height="30">-->
+                <!--</span>-->
+                <!--<i>-->
+                <!--<img src="<%=this.baseUrl%>/assets/images/logo_sm.png" alt="" height="28">-->
+                <!--</i>-->
+                <!--</a>-->
+            </div>
+
+            <!-- Button mobile view to collapse sidebar menu -->
+            <div class="navbar navbar-default" role="navigation">
+                <div class="container">
+
+                    <!-- Navbar-left -->
+                    <ul class="nav navbar-nav navbar-left">
+                        <li>
+                            <button class="button-menu-mobile open-left waves-effect waves-light">
+                                <i class="mdi mdi-menu"></i>
+                            </button>
+                        </li>
+
+                        <li class="hidden-xs">
+                            <a href="javascript:void(0);" class="menu-item waves-effect waves-light" id="time"></a>
+                        </li>
+                        <script>
+                            var today = new Date();
+                            var dd = today.getDate();
+                            var mm = today.getMonth() + 1; //January is 0!
+                            var yyyy = today.getFullYear();
+                            if (dd < 10) {
+
+                                dd = '0' + dd
+                            }
+                            if (mm < 10) {
+
+                                mm = '0' + mm
+                            }
+                            today = mm + '/' + dd + '/' + yyyy;
+                            var myVar = setInterval(function () { myTimer() }, 1000);
+                            function myTimer() {
+                                var d = new Date();
+                                document.getElementById("time").innerHTML = d.toLocaleTimeString();
+                            }
+                        </script>
+                    </ul>
+
+                    <!-- Right(Notification) -->
+                    <ul class="nav navbar-nav navbar-right">
+                        <%--<li>
+                            <a href="#" class="right-menu-item dropdown-toggle" data-toggle="dropdown">
+                                <i class="mdi mdi-bell"></i>
+                                <span class="badge up bg-primary">
+                                    <asp:Label ID="lblcount" runat="server" Text="0"></asp:Label></span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right dropdown-lg user-list notify-list">
+                                <li>
+                                    <h5>Notifications</h5>
+                                </li>
+                                <asp:Label ID="notifi" runat="server"></asp:Label>
+                                <li class="all-msgs text-center">
+                                    <p class="m-0"><a href="<%=this.baseUrl %>/Notification">See all Notification</a></p>
+                                </li>
+                            </ul>
+                        </li>--%>
+                        <li class="dropdown user-box">
+                            <a href="javascript:void(0);" class="dropdown-toggle waves-effect waves-light user-link" data-toggle="dropdown" aria-expanded="true">
+                                <%--<img src="img" alt="user-img" class="img-circle user-img" />--%>
+                                <asp:Image ID="PersImage" CssClass="img-circle user-img" runat="server" />
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-right arrow-dropdown-menu arrow-menu-right user-list notify-list">
+                                <li>
+                                    <h5>
+                                        <asp:Literal ID="usernameForm" runat="server"></asp:Literal>
+                                    </h5>
+                                </li>
+                                <li><a href="changePassword"><i class="ti-settings m-r-5"></i>Change Password </a></li>
+                                <li><a href="<%=this.baseUrl%>/logout.aspx"><i class="mdi mdi-logout m-r-5"></i>Logout</a></li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                    <!-- end navbar-right -->
+
+                </div>
+                <!-- end container -->
+            </div>
+            <!-- end navbar -->
+        </div>
+        <!-- Top Bar End -->
+
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left side-menu">
+            <div class="sidebar-inner slimscrollleft">
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+                    <div class="user-details">
+                        <div class="overlay"></div>
+                        <div class="text-center">
+                            <asp:Image ID="PersImage2" CssClass="img-circle thumb-md" runat="server" />
+                        </div>
+                        <div class="user-info">
+                            <div>
+                                <a href="#setting-dropdown" class="dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    <asp:Literal ID="username2Form" runat="server"></asp:Literal>
+                                    <span class="mdi mdi-menu-down"></span></a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dropdown" id="setting-dropdown">
+                        <ul class="dropdown-menu">
+                            <li><a href="changePassword"><i class="mdi mdi-account-settings-variant m-r-5"></i>Change Password</a></li>
+                            <li><a href="<%=this.baseUrl%>/logout.aspx"><i class="mdi mdi-logout m-r-5"></i>Logout</a></li>
+                        </ul>
+                    </div>
+
+                    <ul>
+                        <li class="menu-title">Navigation</li>
+                        <asp:Literal ID="sidebarMenu" runat="server"></asp:Literal>
+                    </ul>
+                </div>
+                <!-- Sidebar -->
+                <div class="clearfix"></div>
+
+                <div class="help-box">
+                    <h5 class="text-muted m-t-0">For Help ?</h5>
+                    <p class="">
+                        <span class="text-dark"><i class="mdi mdi-gmail"></i><b>Email :</b></span>
+                        <br />
+                        <asp:Label ID="lblEmail1" runat="server" Text=""></asp:Label>
+                        <br />
+                        <asp:Label ID="lblEmail2" runat="server" Text=""></asp:Label>
+                    </p>
+                    <p class="m-b-0">
+                        <span class="text-dark"><i class="mdi mdi-phone-classic"></i><b>Call :</b></span>
+                        <br />
+                        <asp:Label ID="lblConatct1" runat="server" Text=""></asp:Label>
+                        <br />
+                        <asp:Label ID="lblConatct2" runat="server" Text=""></asp:Label>
+                    </p>
+                </div>
+
+            </div>
+            <!-- Sidebar -left -->
+
+        </div>
+        <!-- Left Sidebar End -->
+
+
+
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="content-page">
+            <asp:ContentPlaceHolder ID="content" runat="server">
+            </asp:ContentPlaceHolder>
+            <footer class="footer text-right">
+                <asp:Label ID="lblDate" runat="server" Text=""></asp:Label>
+                @
+                <asp:HyperLink ID="HyperLink" Target="_blank" runat="server"></asp:HyperLink>
+                ©
+                <asp:HyperLink ID="HyperLinkAdmin" Target="_blank" runat="server"></asp:HyperLink>
+            </footer>
+        </div>
+
+
+        <!-- ============================================================== -->
+        <!-- End Right content here -->
+        <!-- ============================================================== -->
+
+
+        <!-- Right Sidebar -->
+        <div class="side-bar right-bar">
+            <a href="javascript:void(0);" class="right-bar-toggle">
+                <i class="mdi mdi-close-circle-outline"></i>
+            </a>
+            <h4 class="">Settings</h4>
+            <div class="setting-list nicescroll">
+                <div class="row m-t-20">
+                    <div class="col-xs-8">
+                        <h5 class="m-0">Notifications</h5>
+                        <p class="text-muted m-b-0"><small>Do you need them?</small></p>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <input type="checkbox" checked="" data-plugin="switchery" data-color="#7fc1fc" data-size="small" />
+                    </div>
+                </div>
+
+                <div class="row m-t-20">
+                    <div class="col-xs-8">
+                        <h5 class="m-0">API Access</h5>
+                        <p class="m-b-0 text-muted"><small>Enable/Disable access</small></p>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <input type="checkbox" checked="" data-plugin="switchery" data-color="#7fc1fc" data-size="small" />
+                    </div>
+                </div>
+
+                <div class="row m-t-20">
+                    <div class="col-xs-8">
+                        <h5 class="m-0">Auto Updates</h5>
+                        <p class="m-b-0 text-muted"><small>Keep up to date</small></p>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <input type="checkbox" checked="" data-plugin="switchery" data-color="#7fc1fc" data-size="small" />
+                    </div>
+                </div>
+
+                <div class="row m-t-20">
+                    <div class="col-xs-8">
+                        <h5 class="m-0">Online Status</h5>
+                        <p class="m-b-0 text-muted"><small>Show your status to all</small></p>
+                    </div>
+                    <div class="col-xs-4 text-right">
+                        <input type="checkbox" checked="" data-plugin="switchery" data-color="#7fc1fc" data-size="small" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /Right-bar -->
+
+    </div>
+    <!-- END wrapper -->
+
+    <script>
+
+    </script>
+
+    <script>
+        var resizefunc = [];
+    </script>
+
+    <!-- jQuery  -->
+    <script src="<%=this.baseUrl%>/assets/js/jquery.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/bootstrap.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/detect.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/fastclick.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/jquery.blockUI.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/waves.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/jquery.slimscroll.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/jquery.scrollTo.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/switchery/switchery.min.js"></script>
+
+
+    <!-- App js -->
+    <script src="<%=this.baseUrl%>/assets/js/jquery.core.js"></script>
+    <script src="<%=this.baseUrl%>/assets/js/jquery.app.js"></script>
+
+
+    <!-- Counter js  -->
+    <script src="<%=this.baseUrl%>/assets/plugins/waypoints/jquery.waypoints.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/counterup/jquery.counterup.min.js"></script>
+
+
+    <!-- Flot chart js -->
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.time.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.tooltip.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.resize.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.pie.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.selection.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/flot-chart/jquery.flot.crosshair.js"></script>
+
+
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/jquery.dataTables.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.bootstrap.js"></script>
+
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.buttons.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/buttons.bootstrap.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/jszip.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/pdfmake.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/vfs_fonts.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/buttons.html5.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/buttons.print.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.fixedHeader.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.keyTable.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.responsive.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/responsive.bootstrap.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.scroller.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.colVis.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/datatables/dataTables.fixedColumns.min.js"></script>
+
+
+    <script src="<%=this.baseUrl%>/assets/plugins/moment/moment.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/timepicker/bootstrap-timepicker.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/bootstrap-colorpicker/js/bootstrap-colorpicker.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/clockpicker/js/bootstrap-clockpicker.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/bootstrap-daterangepicker/daterangepicker.js"></script>
+    <script src="<%=this.baseUrl%>/assets/plugins/bootstrap-filestyle/js/bootstrap-filestyle.min.js"></script>
+    <script src="<%=this.baseUrl%>/assets/nepaliDatePicker/nepali.datepicker.v2.2.min.js"></script>
+
+    <!-- init -->
+    <script src="<%=this.baseUrl%>/assets/pages/jquery.datatables.init.js"></script>
+    <script src="<%=this.baseUrl%>/assets/pages/jquery.form-pickers.init.js"></script>
+
+    <!-- page specific js -->
+    <script src="<%=this.baseUrl%>/assets/pages/jquery.fileuploads.init.js"></script>
+
+    <!-- Dashboard init -->
+    <script src="<%=this.baseUrl%>/assets/pages/jquery.dashboard_2.js"></script>
+
+
+    <!-- Jquery filer js -->
+    <script src="<%=this.baseUrl%>/assets/plugins/jquery.filer/js/jquery.filer.min.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $('.datePickerForAll').datepicker({
+
+                format: "yyyy-mm-dd",
+                autoclose: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDatePickerForAll').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+            });
+
+            $('.timePickerForAll').timepicker({
+                showMeridian: false,
+                default: '10:00'
+            });
+
+            $('.checkHead').click(function () {
+
+                if ($(this).is(':checked')) {
+
+                    $(this).parents().closest('thead').siblings().find('td input:checkbox').prop('checked', true);
+                } else {
+
+                    $(this).parents().closest('thead').siblings().find('td input:checkbox').prop('checked', false);
+                }
+            })
+
+            $('#datatable').dataTable();
+            //Restricts input for each element in the set of matched elements to the given inputFilter
+            (function ($) {
+
+                $.fn.inputFilter = function (inputFilter) {
+
+                    return this.on("input keydown keyup mousedown mouseup select contextmenu drop", function () {
+
+                        if (inputFilter(this.value)) {
+
+                            this.oldValue = this.value;
+                            this.oldSelectionStart = this.selectionStart;
+                            this.oldSelectionEnd = this.selectionEnd;
+                        } else if (this.hasOwnProperty("oldValue")) {
+
+                            this.value = this.oldValue;
+                            this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                        }
+                    });
+                };
+            }(jQuery));
+            //Install input filters
+            $(".onlyNumber").inputFilter(function (value) {
+
+                return /^\d*$/.test(value);
+            });
+        });
+        TableManageButtons.init();
+    </script>
+
+    <asp:ContentPlaceHolder ID="footer" runat="server"></asp:ContentPlaceHolder>
+
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+    <%--=======================================================================================================--%>
+
+    <%--Date Picker--%>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.englishDate1').change(function () {
+                var a = $('.englishDate1').val();
+                if (a != "") {
+                    $('.nepaliDate1').val(AD2BS($('.englishDate1').val()));
+                }
+            });
+
+            $('.englishDate1').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                currentdate: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDate1').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate1').val();
+                    //console.log(a);
+                    //console.log(BS2AD(a));
+                    $('.englishDate1').val(BS2AD($('.nepaliDate1').val()));
+                }
+            });
+
+            $('.englishDate2').change(function () {
+                var a = $('.englishDate2').val();
+                if (a != "") {
+                    $('.nepaliDate2').val(AD2BS($('.englishDate2').val()));
+                }
+            });
+
+            $('.englishDate2').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDate2').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate2').val();
+                    $('.englishDate2').val(BS2AD($('.nepaliDate2').val()));
+                }
+            });
+        })
+        </script>
+
+    <%--AutoLoad Date--%>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.nepaliDate4').val(AD2BS($('.englishDate4').val()));
+            $('.nepaliDate5').val(AD2BS($('.englishDate5').val()));
+
+
+            $('.englishDate4').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true,
+                onChange: function () {
+                    $('.nepaliDate4').val(BS2AD($('.englishDate4').val()));
+                }
+            });
+
+            $('.nepaliDate4').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    $('.englishDate4').val(BS2AD($('.nepaliDate4').val()));
+                }
+            });
+
+            $('.englishDate5').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true,
+                onChange: function () {
+                    $('.nepaliDate5').val(BS2AD($('.englishDate5').val()));
+                }
+            });
+
+            $('.nepaliDate5').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    $('.englishDate5').val(BS2AD($('.nepaliDate5').val()));
+                }
+            });
+        })
+    </script>
+
+    <%--Date with future date disable--%>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            
+
+            $('.englishDate3').change(function () {
+                var a = $('.englishDate3').val();
+                if (a != "") {
+                    $('.nepaliDate3').val(AD2BS($('.englishDate3').val()));
+                }
+            });
+
+            $('.englishDate3').datepicker({
+                format: 'yyyy-mm-dd',
+                endDate: new Date(),
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+            function pad(numb) {
+                return (numb < 10 ? '0' : '') + numb;
+            }
+            var date = new Date();
+            var year = pad(date.getFullYear());
+            var month = pad(date.getMonth() + 1);
+            var day = pad(date.getDate());
+            var qwe = year + '-' + month + '-' + day;
+            var qwe = AD2BS(qwe);
+
+            var arr = qwe.split('-');
+            var naya = arr[1] + '/' + arr[2] + '/' + arr[0];
+            $('.nepaliDate3').nepaliDatePicker({
+                disableAfter: naya,
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate3').val();
+                    $('.englishDate3').val(BS2AD($('.nepaliDate3').val()));
+                }
+            });
+
+            $('.englishDate4').change(function () {
+                var a = $('.englishDate4').val();
+                if (a != "") {
+                    $('.nepaliDate4').val(AD2BS($('.englishDate4').val()));
+                }
+            });
+
+            $('.englishDate4').datepicker({
+                format: 'yyyy-mm-dd',
+                endDate: new Date(),
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+            function pad(numb) {
+                return (numb < 10 ? '0' : '') + numb;
+            }
+            var date = new Date();
+            var year = pad(date.getFullYear());
+            var month = pad(date.getMonth() + 1);
+            var day = pad(date.getDate());
+            var qwe = year + '-' + month + '-' + day;
+            var qwe = AD2BS(qwe);
+            var arr = qwe.split('-');
+            var naya = arr[1] + '/' + arr[2] + '/' + arr[0];
+            $('.nepaliDate4').nepaliDatePicker({
+                disableAfter: naya,
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate4').val();
+                    $('.englishDate4').val(BS2AD($('.nepaliDate4').val()));
+                }
+            });
+        });
+    </script>
+
+    <%--Datepicker inside Update Panel--%>
+    <script type="text/javascript">
+        function pageLoad(sender, args) {
+
+            $(document).ready(function () {
+                $('.timePicker2').timepicker({
+                    showMeridian: false,
+                    minuteStep: 1,
+                    defaultTime: 'current',
+                });
+            })
+
+            $('.englishDate7').change(function (sender, args) {
+                var a = $('.englishDate7').val();
+                if (a != "") {
+                    $('.nepaliDate7').val(AD2BS($('.englishDate7').val()));
+                }
+            });
+
+            $('.englishDate7').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                currentdate: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDate7').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate7').val();
+                    $('.englishDate7').val(BS2AD($('.nepaliDate7').val()));
+                }
+            });
+
+            $('.englishDate8').change(function (sender, args) {
+                var a = $('.englishDate8').val();
+                if (a != "") {
+                    $('.nepaliDate8').val(AD2BS($('.englishDate8').val()));
+                }
+            });
+
+            $('.englishDate8').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                currentdate: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDate8').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate8').val();
+                    $('.englishDate8').val(BS2AD($('.nepaliDate8').val()));
+                }
+            });
+
+        }
+
+    </script>
+    <script>
+        $(document).ready(function () {
+            $(".notificationId").on('click', function () {
+                console.log(notificationId);
+                alert($(this).attr('id'));
+                $.ajax({
+                    url: 'attendanceMaster.Master/changeNotificationStatus',
+                    data: {},
+                    sucess: function (result) {
+                        console.log();
+                    },
+                    error: function (error) {
+                        console.log();
+                    }
+                })
+            })
+        })
+    </script>
+
+
+
+</body>
+</html>

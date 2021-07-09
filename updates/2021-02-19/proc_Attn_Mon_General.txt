@@ -1,0 +1,1123 @@
+----EXEC proc_Attn_Mon_General @date_from='2021-01-01', @date_to='2021-01-30', @emp_id=0,@BranchId=0, @DeptId=15,@Aflag=0                            
+--update Tbl_Emp_Off_Info set IsOT=0 where EMP_ID=801                                                                                   
+--                                                                        
+CREATE      proc [dbo].[proc_Attn_Mon_General]                                                                             
+                                                                        
+--select * from rpt_attendance_data                                                                        
+@emp_id as int=0 , 
+@BranchId as int=0,  
+@DeptId as int=0,                                                               
+@date_from as datetime,                                                                     
+@date_to as datetime,                                                                    
+@Aflag int=0 -- 0 first, 1 continuous                                                                               
+  as                                                                              
+  begin   --first begin                                                                           
+  declare @flag as VARchar(30),                                                                         
+  @Remarks varchar(1000),                                                        
+  @inRemarks varchar(500),                                                             
+  @inRemarks2 varchar(500),                                                       
+  @OTHoliday1 varchar(200),                                                       
+  @OTHoliday2 varchar(200),                                
+  @Leavehrs1 varchar(200),                                                       
+  @Leavehrs2 varchar(200),                                                             
+  @date as datetime,                                                    
+  @Branch varchar(300),                                                                  
+  @Department varchar(300),                                                                                      
+  @EMP_FULLNAME varchar(500),                                                
+  @LEAVE_NAME varchar(500),                                             
+  @ISPAIDLEAVE varchar(500),                                                    
+  @absdate varchar(200),                                                                         
+  @absNextdate varchar(200),                                                    
+  @lvedate as datetime,                                                                         
+  @brid int,        
+  @lveNextdate as datetime,                                                 
+  @holdate as datetime,                                               
+  @leave varchar(500),                                                                        
+  @holNextdate as datetime,                                          
+  @ldate as datetime,                          
+  @ot int,                      
+  @time int,              
+  @default int,  
+  @GenOT varchar(10),
+  @intime varchar(500),
+  @workhour int,
+  @OTMIN varchar(200),                                                       
+  @OTHRS varchar(200) 
+  
+  ---for weekend leave holiday
+   declare @Rholiday varchar(500)
+   declare @RWeekend varchar(500)
+   declare @RLeave varchar(500)
+   set @Rholiday=''
+   set @RWeekend=''
+   set @RLeave=''
+  ---  
+  set nocount on    
+  CREATE TABLE #rpt_attendance_data(
+	Emp_Id varchar(20),
+	emp_fullname varchar(250),
+	tdate date,
+	TDate_Out date,
+	InTime varchar(20),
+	INMode varchar(200),
+	INDIFF varchar(50),
+	INREMARKS varchar(500),
+	OutTime varchar(50),
+	OutMode varchar(200),
+	OUTDIFF varchar(50),
+	OUTREMARKS varchar(500),
+	WORKHOUR_ID varchar(50),
+	JOBTIME varchar(50),
+	worked_hrs1 varchar(50),
+	TDate_Out1 date,
+	InTime1 varchar(50),
+	INMode1 varchar(200),
+	INDIFF1 varchar(50),
+	INREMARKS1 varchar(500),
+	OutTime1 varchar(500),
+	OutMode1 varchar(200),
+	OUTDIFF1 varchar(50),
+	OUTREMARKS1 varchar(500),
+	WORKHOUR_ID1 varchar(50),
+	JOBTIME1 varchar(50),
+	worked_hrs2 varchar(50),
+	TotalMin numeric(9, 0),
+	HrsMin varchar(100),
+	OT_Values numeric(9, 0),
+	TotalOT varchar(100),
+	OT_Hours varchar(50),
+	OT_Val numeric(9, 0),
+	Shift varchar(50),
+	flag varchar(30),
+	Remark varchar(1000),
+	BRANCH_NAME varchar(500),
+	DEPT_NAME varchar(500),
+	PAIDLEAVE smallint,
+	nepaliDate varchar(50),
+	GenOT varchar(10),
+	DaysCount numeric(9, 2),
+	Duty_roster varchar(100),
+	DutyHrs int,
+	CountDay int
+)
+
+  
+  declare @outdt date,@cnday int,@outt varchar(20)
+                                                                             
+  --if (@Aflag=0 OR @Aflag=3)                                                                      
+  --begin                                                                      
+  --truncate table rpt_attendance_data                                                                       
+  --truncate table rpt_exception_data                                                                      
+  --end    
+  
+ DECLARE @EmpCursor CURSOR
+ if @emp_id=0
+ begin
+ SET @EmpCursor = CURSOR FAST_FORWARD FOR                          
+ select distinct info.emp_id from view_emp_info info                                                
+ where info.branch_id=(CASE  WHEN @BranchId=0 THEN info.branch_id ELSE @BranchId END)                           
+ and info.dept_id=(CASE WHEN @DeptId=0 THEN dept_id ELSE @DeptId END) 
+ end
+ else
+ begin
+ SET @EmpCursor = CURSOR FAST_FORWARD FOR 
+ select distinct info.emp_id from view_emp_info info                                                
+ where info.EMP_ID=@emp_id
+ end
+
+ OPEN @EmpCursor                                                   
+ FETCH NEXT FROM @EmpCursor                          
+ INTO @emp_id        
+ 
+ --set @emp_id= @EmpId 
+ WHILE @@FETCH_STATUS=0                          
+ --BEGIN                                                                    
+  begin   --strat 2nd begin                                                                      
+  set @date=@date_from              
+  while @date <= @date_to      
+  begin    --strat 3rd begin                                                    
+  set @OTHoliday1=null                                                                  
+  set @OTHoliday2=null                                                              
+  set @inRemarks=null                                                
+  set @inRemarks2=null             
+  set @Remarks=null                                                                                    
+ set @LEAVE_NAME =null   
+  set @ISPAIDLEAVE = null   
+  set @absdate=null        
+  set @absNextdate=null                                                
+  set @lvedate=null              
+set @lveNextdate=null                                                 
+  set @holdate =null                      
+  set @ldate=null                                  
+  set @Leavehrs1=null                                
+  set @Leavehrs2=null   
+  set @GenOT=Null 
+  set @workhour=NULL 
+   set @OTMIN =Null                                                        
+  set @OTHRS =Null
+  set @outdt=NULL
+  set @cnday=0
+  set @outt=NULL
+  declare @Device varchar(50)                    
+  select @ot=1
+  --isnull(IsOT,0) from Tbl_Emp_Off_Info where emp_id=@emp_id                            
+  --OT calculation 1-OT 0-No OT                           
+   select @brid=BRANCH_ID from view_Emp_Info where EMP_ID=@emp_id   
+  
+   declare @widfromwork int,
+	 @widfromattn int 
+   set @widfromwork=null
+	set @widfromattn=null
+ select @widfromattn=max(WORKHOUR_ID) from Tbl_Emp_Attn_Log_General where TDATE=@date and EMP_ID=@emp_id           
+select @time=isnull((datepart(HOUR, w.WORK_HOUR )*60)+datepart(MINUTE, w.WORK_HOUR ),0),
+@widfromwork=sg.WH_ID                
+from tbl_org_working_hrs w inner join Tbl_Org_Shift_Group sg on w.WORK_ID=sg.WH_ID                 
+inner join tbl_org_workinghrs wh on sg.Group_ID=wh.Group_id where wh.Emp_Id=@emp_id and wh.Sdate=@date                
+ if @time is null              
+begin              
+              
+select @time=abs(isnull(DATEDIFF(MINUTE,IN_START, OUT_START),0)),@widfromwork=tbl_org_working_hrs.WORK_ID                  
+from tbl_org_working_hrs where IS_DEFAULTSHIFT=1             
+--select @time              
+end 
+
+if @widfromattn is not null
+begin
+  if @widfromattn!=@widfromwork
+  begin
+  update Tbl_Emp_Attn_Log_General set WORKHOUR_ID=@widfromwork where TDATE=@date and EMP_ID=@emp_id  
+  end 
+ end                        
+                                     
+              
+select @Department=dept_name,@Branch=BRANCH_NAME,@EMP_FULLNAME=EMP_FULLNAME from view_emp_info where EMP_ID=@emp_id                                                                
+  if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id)                                  
+  begin                          
+ insert into #rpt_attendance_data(Emp_Id,emp_fullname,BRANCH_NAME,DEPT_NAME,Shift,tdate,TDate_Out,InTime,INMode,INDIFF,                                
+ INREMARKS,OutTime,OutMode,OUTDIFF,OUTREMARKS,WORKHOUR_ID,JOBTIME,worked_hrs1,TDate_Out1,InTime1,INMode1,INDIFF1,                          
+ INREMARKS1,OutTime1,OutMode1,OUTDIFF1,OUTREMARKS1,WORKHOUR_ID1,                                                  
+ JOBTIME1,worked_hrs2,TotalMin,HrsMin,OT_Values,TotalOT,
+ OT_Hours,OT_Val,nepaliDate,GenOT,Duty_roster)                                                                           
+                                                                
+  select al.Emp_Id,al.EMP_FULLNAME,al.BRANCH_NAME,al.DEPT_NAME,convert(varchar(3),DATENAME(dw,al.Tdate)),al.TDATE, al.TDate_Out,al.InTime,                                                            
+  al.INMode,al.INDIFF,al.INREMARKS,al.OutTime,al.OutMode,al.OUTDIFF,                                                              
+  al.OUTREMARKS,al.WORKHOUR_ID,al.JOBTIME,al.worked_hrs1,al.TDate_Out1,al.InTime1,      
+  al.INMode1,al.INDIFF1,al.INREMARKS1,al.OutTime1,al.OutMode1,al.OUTDIFF1,                                                              
+  al.OUTREMARKS1,al.WORKHOUR_ID1,al.JOBTIME1,al.worked_hrs2,al.TotalMin,al.HrsMin,al.OT_values,al.TotalOT,
+  al.OT_Hours,al.OT_VAL,dbo.GetCurNepaliDate(al.nepaliDate,4),al.GenOT ,al.Duty_roster                                                        
+                                            
+from                                                                      
+  (                                                      
+   SELECT  llog.emp_id as Emp_Id,@EMP_FULLNAME as emp_fullname ,max(empinfo.BRANCH_NAME) as 'BRANCH_NAME',@Department as 'DEPT_NAME',tdate,            
+                        
+max(CASE Counter WHEN 1 THEN tdate_out ELSE tdate END) AS TDate_Out, 
+max(CASE Counter WHEN 1 THEN convert(varchar(5), CONVERT(time, intime, 0)) ELSE '' END) AS InTime,                                            
+max(CASE Counter WHEN 1 THEN INMODE ELSE '' END) AS INMode,                                                              
+max(CASE Counter WHEN 1 THEN DBO.WRKDIFF(intime,'',WORKHOUR_ID,1,tdate,tdate_out) ELSE '' END) AS INDIFF,                                                              
+                              
+max(CASE Counter WHEN 1 THEN INREMARKS ELSE '' END) AS INREMARKS,                             
+max(CASE Counter WHEN 1 THEN ISNULL(convert(varchar(5), CONVERT(time, outtime, 0)),'') ELSE '' END) AS OutTime,                                                              
+max(CASE Counter WHEN 1 THEN OUTMODE ELSE '' END) AS OutMode,                  
+max(CASE Counter WHEN 1 THEN DBO.WRKDIFF('',ISNULL(outtime,''),WORKHOUR_ID,2,tdate,tdate_out) ELSE '' END) AS OUTDIFF,                                                              
+                                                      
+                                                      
+max(CASE Counter WHEN 1 THEN OUTREMARKS ELSE '' END) AS OUTREMARKS,                                      
+max(CASE COUNTER WHEN 1 THEN llog.workhour_id ELSE '' END) AS WORKHOUR_ID,            
+max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS JOBTIME,                                             
+                                                        
+ max(CASE Counter WHEN 1 THEN convert(varchar(40),DateDiff(minute,cast(tdate + ' ' +intime as datetime), Cast(isnull(tdate_out,tdate)  + ' ' +outtime as datetime))%(24*60)/60)+ 'hrs'+  convert(varchar(40),DateDiff(minute,cast(tdate + ' ' +intime as datet
+ime), Cast(isnull(tdate_out,tdate)  + ' ' +outtime as datetime))%60)+ 'min' ELSE '' END)                                                                        
+  as [worked_hrs1],                                                        
+                                                                 
+max(CASE Counter WHEN 2 THEN TDate_Out ELSE tdate END) AS TDate_Out1,            
+max(CASE Counter WHEN 2 THEN convert(varchar(5), CONVERT(time, intime, 0)) ELSE '' END) AS InTime1,               
+max(CASE Counter WHEN 2 THEN INMODE ELSE '' END) AS INMode1,              
+max(CASE Counter WHEN 2 THEN DBO.WRKDIFF(intime,'',WORKHOUR_ID,1,tdate,tdate_out) ELSE '' END) AS INDIFF1,                      
+                                            
+                                                      
+max(CASE Counter WHEN 2 THEN INREMARKS ELSE '' END) AS INREMARKS1,                
+max(CASE Counter WHEN 2 THEN ISNULL(convert(varchar(5), CONVERT(time, outtime, 0)),'') ELSE '' END) AS OutTime1,            
+max(CASE Counter WHEN 2 THEN OUTMODE ELSE '' END) AS OutMode1,                                      
+max(CASE Counter WHEN 2 THEN DBO.WRKDIFF('',ISNULL(outtime,''),WORKHOUR_ID,2,tdate,tdate_out) ELSE '' END) AS OUTDIFF1,   
+max(CASE Counter WHEN 2 THEN OUTREMARKS ELSE '' END) AS OUTREMARKS1,                                                              
+max(CASE COUNTER WHEN 2 THEN llog.workhour_id ELSE '' END) AS WORKHOUR_ID1,                                                              
+max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS JOBTIME1,     
+  
+max(CASE Counter WHEN 2 THEN convert(varchar(40),DateDiff(minute,cast(tdate + ' ' +intime as datetime), 
+Cast(isnull(tdate_out,tdate)  + ' ' +outtime as datetime))%(24*60)/60)+ 'hrs'+                                     
+  convert(varchar(40),DateDiff(minute,cast(tdate + ' ' +intime as datetime), 
+  Cast(isnull(tdate_out,tdate)  + ' ' +outtime as datetime))%60)+ 'min' ELSE '' END)                                                                              
+  as [worked_hrs2],                                  
+               
+(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                          
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int))as TotalMin,                                                          
+dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int))as HrsMin,                                                        
+
+  
+(CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                      
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) /*Duty Continued*/ AS DATETIME)) ELSE '' END) AS int),0)<(@time)    
+ THEN       
+ --if(a>=480)    
+ CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+ CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                      
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int),0)>=@time    
+then    
+ '0'    
+    else    
+    (CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+ CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                   
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)-@time)             
+ end                        
+       
+else      
+(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                       
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)-(@time))                                
+end) as OT_values ,   
+                         
+(CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),            
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int),0)<(@time)    
+ THEN       
+ --if(a>=480)    
+ CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+ CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                      
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int),0)>=@time    
+ then    
+ '0Min'    
+    else    
+    +'-'+dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                   
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+ CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                   
+ CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)-@time)                                
+ end                        
+       
+else      
+dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                      
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                    
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)-(@time))                          
+end) as TotalOT ,             
+                                
+--------------                                                                        
+                             
+                  
+OT_Hours, OT_Val,Tdate as nepaliDate ,@GenOT as GenOT,
+--max(wrk.in_start +' - ' + wrk.out_end )as [Duty_roster]  
+max(convert(varchar(5), CONVERT(time, wrk.in_start, 0)) +' - ' + convert(varchar(5), CONVERT(time, wrk.out_end, 0)) )as [Duty_roster]  
+                                                 
+                                  
+ from Tbl_Emp_Attn_Log_General llog                                
+inner join tbl_org_working_hrs wrk on llog.workhour_id = wrk.work_id                         
+  inner join view_emp_info empinfo on empinfo.EMP_ID=llog.EMP_ID                                          
+ --inner join Tbl_Org_WorkingHrs whrs on llog.EMP_ID=whrs.Emp_Id                                                                     
+where llog.emp_id =@emp_id  and tdate=@date AND empinfo.STATUS_ID=1                                                                      
+GROUP BY llog.emp_id,tdate,OT_Hours,OT_VAL) as al                                                        
+   
+  end                                                 
+else                                                               
+  begin                 
+                                     
+ insert into #rpt_attendance_data(Emp_Id,emp_fullname,BRANCH_NAME,DEPT_NAME,Shift,tdate,TDate_Out,InTime,INMode,INDIFF,                                                
+ INREMARKS,OutTime,OutMode,OUTDIFF,OUTREMARKS,WORKHOUR_ID,JOBTIME,worked_hrs1,TDate_Out1,InTime1,INMode1,INDIFF1,INREMARKS1,                              
+ OutTime1,OutMode1,OUTDIFF1,OUTREMARKS1,WORKHOUR_ID1,JOBTIME1,worked_hrs2,TotalMin,HrsMin,                                                
+OT_Values,TotalOT,
+
+--TDate_Out2,InTime2,INMode2,INDIFF2,INREMARKS2,OutTime2,                                                
+--OutMode2,OUTDIFF2,OUTREMARKS2,WORKHOUR_ID2,JOBTIME2,worked_hrs3,TDate_Out3,InTime3,INMode3,INDIFF3,                                      
+--INREMARKS3,OutTime3,OutMode3,OUTDIFF3,OUTREMARKS3,WORKHOUR_ID4,JOBTIME3,worked_hrs4,
+
+OT_Hours,OT_Val,nepaliDate,GenOT,Duty_roster)    
+select @emp_id as Emp_Id,@EMP_FULLNAME,@Branch,@Department,convert(varchar(3),datename(dw,@date)),@date as Tdate, null as TDate_Out, null as InTime,                                     
+null as INMode, null as INDIFF, null as INREMARKS, null as OutTime, null as OutMode, null as OUTDIFF, null as OUTREMARKS, null as WORKHOUR_ID,                                     
+null as JOBTIME, null as worked_hrs1, null as TDate_Out1, null as InTime1, null as INMode1, null as INDIFF1,                                     
+null as INREMARKS1, null as OutTime1, null as OutMode1, null as OUTDIFF1, null as OUTREMARKS1, null as WORKHOUR_ID1,                                           
+null as JOBTIME1,                                              
+  null as worked_hrs2,null as TotalMin, null as HrsMin, null as OT_Values, null as TotalOT, 
+  
+ -- null as TDate_Out2, null as InTime2, null as INMode2,                                 
+ -- null as INDIFF2, null as INREMARKS2, null as OutTime2, null as OutMode2, null as OUTDIFF2, null as OUTREMARKS2,                                                   
+ -- null as WORKHOUR_ID2, null as JOBTIME2, null as worked_hrs3, null as TDate_Out3, null as InTime3, null as INMode3,     
+ -- null as INDIFF3, null as INREMARKS3, null as OutTime3, null as OutMode3, null as OUTDIFF3, null as OUTREMARKS3, null as WORKHOUR_ID4,                                     
+                                                
+ --null as JOBTIME3, null as worked_hrs4, 
+ null as OT_Hours, null as OT_Val,dbo.GetCurNepaliDate(@date,4) as nepaliDate,@GenOT,
+ dbo.fun_defaultshift(@emp_id,@date) as Duty_roster                                                                            
+end 
+ 
+if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and INTIME is not null and COUNTER=1  and TDATE=@date)  
+begin
+	 if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and OUTTIME is not null and COUNTER=1 and TDATE=@date)  
+		 begin
+		 set @flag =(select (CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                   
+		CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                            
+		CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int),0)<=300 THEN  'hp'  
+		else 'pre'end) AS half                                              
+		from Tbl_Emp_Attn_Log_General llog                           
+		 inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                        
+		 where llog.EMP_ID=@emp_id and llog.TDATE=@date)
+		 select @Remarks='Present' 
+		 end 
+	 else
+	 begin
+		 if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and INTIME is not null and COUNTER=2 and TDATE=@date)  
+		 begin
+				 if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and OUTTIME is not null and COUNTER=2 and TDATE=@date)  
+				 begin
+					set @flag =(select (CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                       
+					CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                            
+					CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int),0)<=300 THEN  'hp'                                                           
+					else 'pre'end) AS half                                                          
+					from Tbl_Emp_Attn_Log_General llog                           
+					 inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                           
+					 where llog.EMP_ID=@emp_id and llog.TDATE=@date)
+					 select @Remarks='Present' 
+				 end
+		  end
+	  end
+	 if @flag='hp'
+	 begin
+	update #rpt_attendance_data set DaysCount=1.00--0.50--, OT_Values=0,TotalOT='0Min'                                                             
+	where emp_id=@emp_id and tdate=@date        
+	 end
+	 else
+	 begin
+	  update #rpt_attendance_data set DaysCount=1.00                                      
+	where emp_id=@emp_id and tdate=@date  
+	 end
+ end 
+ --else
+ --begin
+ -- update #rpt_attendance_data set DaysCount=0.00                                      
+	--where emp_id=@emp_id and tdate=@date  
+--end
+ ----end half day                                                        
+--if exists(select * from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and tdate=@date)                                                        
+-- begin       
+-- update #rpt_attendance_data set DaysCount=1.00  where EMP_ID=@emp_id and tdate=@date 
+-- end  
+if exists(select  distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and taken =0.5)                                                                              
+  begin  
+  update #rpt_attendance_data set DaysCount=0.50,OT_Values=0,TotalOT='0Min'  where EMP_ID=@emp_id and tdate=@date 
+  end                                                        
+ if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and TDATE=@date) 
+ begin        
+if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and INTIME is not null  and TDATE=@date)                                            
+ begin                                                         
+ set @inRemarks=(select (CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,cast(TDATE_OUT + ' '+ llog.intime as datetime),                                    
+cast(ISNULL(TDATE_OUT,0) + ' ' +wrk.in_start as datetime)) ELSE '' END) as int),0)>0 THEN        
+ 'Early In'              
+else 'Late In'end) AS INREMARKS                                             
+from Tbl_Emp_Attn_Log_General llog                            
+ inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                           
+ where llog.EMP_ID=@emp_id and llog.TDATE=@date) 
+ end                               
+ else                              
+ begin                              
+ set @inRemarks=''                              
+ end                              
+ if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and INTIME is not null and COUNTER=2 and TDATE=@date)                                                    
+ begin                          
+ set @inRemarks2=(select (CASE WHEN ISNULL(CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,cast(TDATE_OUT + ' '+ llog.intime as datetime),                              
+ cast(ISNULL(TDATE_OUT,0) + ' ' +wrk.in_start as datetime)) ELSE '' END) as int),0)>0 THEN  'Early In'                     
+else 'Late In'end) AS INREMARKS1                                                       
+from Tbl_Emp_Attn_Log_General llog                                                           
+ inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                           
+ where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                 
+ end                               
+ else                              
+ begin                              
+ set @inRemarks2=''                              
+ end                                                            
+ end                                          
+     
+if exists(select *from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id)          
+   begin                                                      
+   select @flag='hol', @Remarks=Holiday_name +'['+convert(varchar(10),OnDate,111)+']' from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id                   
+  update #rpt_attendance_data set DaysCount=1.00                                      
+	where emp_id=@emp_id and tdate=@date                   
+  if exists(select * from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id AND TDATE=@date)                                                  
+   begin                                                  
+   set @OTHoliday1= (select ((CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                                   
+   CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+   CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                          
+   CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as OT_values                   
+   from Tbl_Emp_Attn_Log_General llog                                          
+    inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                         
+    where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                                        
+                                        
+    set @OTHoliday2= (select (dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                            
+   CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+   CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                                
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as TotalOT                                                        
+from Tbl_Emp_Attn_Log_General llog                                                         
+    inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                         
+    where llog.EMP_ID=@emp_id and llog.TDATE=@date) 
+                                                      
+    
+                 
+   update #rpt_attendance_data set OT_Values=@OTHoliday1,TotalOT=@OTHoliday2--,GenOT=@GenOT                       
+   where emp_id=@emp_id and tdate=@date             
+  --  end                                                   
+                                    
+end                                          
+end                                              
+else if dbo.fnc_isweekend(@emp_id, @date) =1                                                  
+  begin       
+  select @flag='wee', @Remarks='Weekend Holiday'                  
+    update #rpt_attendance_data set DaysCount=0.00                                      
+	where emp_id=@emp_id and tdate=@date        
+if exists(select  distinct EMP_ID from tbl_Org_Leave_Log where emp_id=@emp_id and leave_date=@date and LEAVE_ID not in (10))              
+ begin        
+   set @flag='lev'  
+   set @Remarks=(select  distinct linfo.leave_name+' ('+REMARKS+')' from tbl_Org_Leave_Log llog 
+   inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                           
+ end        
+                                                  
+  if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and TDATE=@date)                       
+ begin           
+ set @OTHoliday1= (select ((CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                           
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                         
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as OT_values                                
+from Tbl_Emp_Attn_Log_General llog                                                       
+ inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                       
+ where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                                      
+                                                       
+ set @OTHoliday2= (select (dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as TotalOT                                                
+from Tbl_Emp_Attn_Log_General llog                                                       
+ inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                      
+ where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                                      
+  --	 set @Remarks='Worked in Weekend'   
+                            
+update #rpt_attendance_data set OT_Values=@OTHoliday1,TotalOT=@OTHoliday2,DaysCount=1.00--,GenOT=@GenOT                   
+where emp_id=@emp_id and tdate=@date                                                       
+ end       
+                            
+end          
+              
+     --half leave   
+	 
+else if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and taken =1)                                                                     
+begin                                                
+set @flag='lev'                                                                              
+set @Remarks=(select  distinct linfo.leave_name+ '('+REMARKS+')' from tbl_Org_Leave_Log llog
+ inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                                          
+end    
+else if exists(select  distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and taken =0.5)                                                                              
+  begin  
+  --change code here                                        
+ set @flag='Half'--, @Remarks='Weekend Holiday'                                                 
+                               
+set  @Leavehrs1= (select ((CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),          
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as OT_values                                        
+from Tbl_Emp_Attn_Log_General llog                                                  
+inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                                                       
+where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                                      
+                                                       
+set @Leavehrs2= (select (dbo.MinutesToDuration(CAST(max(CASE Counter WHEN 1 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS datetime),                                                              
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) as int) + 
+CAST(max(CASE Counter WHEN 2 THEN DATEDIFF(n,CAST(TDATE + ' ' + INTIME AS DATETIME),                           
+CAST(ISNULL(TDATE_OUT,TDATE) + ' ' + ISNULL(OUTTIME,INTIME) AS DATETIME)) ELSE '' END) AS int)))as TotalOT                                                      
+from Tbl_Emp_Attn_Log_General llog                                                 
+inner join tbl_org_working_hrs wrk on llog.workhour_id=wrk.work_id                        
+where llog.EMP_ID=@emp_id and llog.TDATE=@date)                                      
+ --if exists(select * from Tbl_Emp_Attn_Log_General where EMP_ID=@emp_id and TDATE=@date)                                
+ -- begin                                 
+set @Remarks=(select  distinct linfo.leave_name +' (Half Day)'+' ('+REMARKS+')' from tbl_Org_Leave_Log llog 
+inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                                      
+update #rpt_attendance_data set TotalMin=isnull(@Leavehrs1,0),HrsMin=isnull(@Leavehrs2,'0Min'), OT_Values=0,TotalOT='0Min' ,GenOT=Null      
+where emp_id=@emp_id and tdate=@date           
+ -- end                          
+ end                                
+ --end half leave                   
+                                                                  
+  else if exists(select  distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id)            
+  begin                                                                                                                   
+set @flag='lev'  
+ if exists(select  distinct EMP_ID from tbl_subweek where Emp_ID=@emp_id and Week_Day=@date)                                                          
+ begin    
+	set @flag='wesubof'
+	select @Remarks=('Weekend Substitute of '+CONVERT(varchar(10), Week_Day,111))  from tbl_subweek where Emp_Id=@emp_id and Sub_Day=@date                                    
+ end  
+ else
+ begin                         
+set @Remarks=(select  distinct linfo.leave_name+' ('+REMARKS+')'  from tbl_Org_Leave_Log llog inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                                  
+
+
+
+
+
+
+
+
+
+
+end
+                                            
+ end                                                                                                    
+                        
+                                                                          
+ else         
+  begin          
+  if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id) 
+begin                          
+ if exists(select  distinct atlog.EMP_ID from Tbl_Emp_Attn_Log_General atlog                     
+ inner join tbl_org_working_hrs hrs on atlog.workhour_id=hrs.work_id                                              
+ inner join Tbl_Org_WorkingHrs whrs on atlog.EMP_ID=whrs.Emp_Id      
+where CAST(atlog.INTIME AS DATETIME) > CAST(hrs.IN_END AS DATETIME)                       
+and tdate=@date and atlog.emp_id= @emp_id                                                                            
+and atlog.emp_id not in(select emp_id from tbl_org_leave_log where leave_date=@date)                                                                          
+and atlog.emp_id not in(select emp_id from tbl_emp_Outstation where tdate=@date)      
+and atlog.emp_id not in (select emp_id from tbl_org_weekend where [date]=@date )                                                                          
+ )        
+select @flag='pre', @Remarks='Present' --'Absent Present - Late In'     
+    
+else                                                                      
+select @flag='pre', @Remarks='Present'  
+end                                                                                     
+  else                                                                              
+begin                                                        
+select @flag='abs', @Remarks='Absent'                                                                              
+end                                                                     
+end   
+     
+/*OT gen*/ 
+--if exists(select  distinct EMP_ID from tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date)                                                 
+-- begin       
+-- set @GenOT='GenOT' 
+-- set @OTHoliday1=(select OT_Values from  tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date) 
+--  set @OTHoliday2=(select dbo.MinutesToDuration(OT_Values) from  tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date)                                                                                                          
+-- end 
+  
+
+
+/*-----*/
+if exists(select 1 from tbl_subweek where Emp_ID=@emp_id and Week_Day=@date)       
+ begin       
+ set @flag='wesubon'  
+  select @Remarks=('Weekend Substituted on '+CONVERT(varchar(10), Sub_Day,111))  from  tbl_subweek where Emp_Id=@emp_id and Week_Day=@date    
+  if exists(select *from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and PHDate=@date and EarnPH=1)                                                     
+  begin 
+  set @flag='wesubonph'  
+  select @Remarks=@Remarks+(' & PH [ '+HoliDay_Name+' ] Sub. on '+CONVERT(varchar(10), OnDate,111))  from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id		and PHDate=@date   
+  end        
+ end  
+ /*double duty*/
+-- if exists(select * from Tbl_DoubleSub where Emp_ID=@EMP_ID and Sub_Day=@date and [Day]='F')   
+--	begin 
+--	--set @RemMin=(select isnull(REM_OT,0)  from Tbl_DoubleSub where sid=(SELECT MAX(sid) FROM Tbl_DoubleSub where Emp_ID=@EMP_ID and DSub_Day=@date)) 
+--	set @flag='dd'  
+--	select @Remarks=('[Full] '+Remarks)  from  Tbl_DoubleSub where Emp_ID=@EMP_ID and Sub_Day=@date
+--	end
+--if exists(select * from Tbl_DoubleSub where Emp_ID=@EMP_ID and Sub_Day=@date and [Day]='H')   
+--	begin 
+--	--set @RemMin=(select isnull(REM_OT,0)  from Tbl_DoubleSub where sid=(SELECT MAX(sid) FROM Tbl_DoubleSub where Emp_ID=@EMP_ID and DSub_Day=@date)) 
+--	set @flag='dd'  
+--	select @Remarks=('[Half] '+Remarks)  from  Tbl_DoubleSub where Emp_ID=@EMP_ID and Sub_Day=@date
+--	end
+
+-- if exists(select * from Tbl_DoubleSub where Emp_ID=@EMP_ID and DSub_Day=@date)   
+--	begin 
+--   set @OTHoliday1=(select isnull(REM_OT,0)  from Tbl_DoubleSub where sid=(SELECT MAX(sid) FROM Tbl_DoubleSub where Emp_ID=@EMP_ID and DSub_Day=@date)) 
+--   set @OTHoliday2=(select  dbo.MinutesToDuration(isnull(REM_OT,0))  from Tbl_DoubleSub where sid=(SELECT MAX(sid) FROM Tbl_DoubleSub where Emp_ID=@EMP_ID and DSub_Day=@date))
+--	  update #rpt_attendance_data set OT_Values=@OTHoliday1,TotalOT=@OTHoliday2                                               
+--	where emp_id=@emp_id and tdate=@date           
+--	end  
+
+
+/*PH with Weekend exists*/
+if dbo.fnc_isweekend(@emp_id,@date)=1 
+--exists (select 1 from Tbl_Org_WeekEnd where EMP_ID=@emp_id and DATE=@date)          
+  begin   
+  set @time=0 
+  --select distinct Emp_ID from Tbl_Emp_ForceDuty where Emp_ID=1991 and OnDate='2019-10-05'                 
+	if exists(select *from Tbl_Emp_ForceDuty where ondate=@date and Emp_ID=@emp_id) 
+	   begin   
+	   select @flag='wph',@Remarks='Weekend and PH'
+	    if exists(select distinct Emp_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id 
+		and INTIME is not null) 
+			begin    
+			 select @flag='wowph',@Remarks='Worked on Weekend and PH'
+			end                                                                     
+	   end           
+	   else
+	   begin
+	   if exists(select distinct Emp_ID from Tbl_Emp_Attn_Log_General where tdate=@date 
+	   and emp_id=@emp_id and INTIME='00:00:00') 
+			begin  
+			set @Remarks='Weekend Holiday'
+			update #rpt_attendance_data set intime=null where
+				tdate=@date and emp_id=@emp_id 
+			end 
+	   else if exists(select distinct Emp_ID from Tbl_Emp_Attn_Log_General where tdate=@date 
+	   and emp_id=@emp_id and INTIME!='00:00:00') 
+			begin 
+			   
+			select @flag='wow',@Remarks='Worked in Weekend'
+			end  
+	   --else
+	   --begin
+	   --select 'hello'
+	   --end
+	 end 
+   end  
+   /*Duty Continue*/
+ 
+ if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id and  INREMARKS is NULL) 
+	begin
+	set @cnday=(select  isnull(DATEDIFF(DAY,TDATE,TDATE_OUT),0) from Tbl_Emp_Attn_Log_General 
+	where counter=1 and tdate=@date and emp_id=@emp_id and INREMARKS is NULL) 
+	update #rpt_attendance_data set
+		CountDay=@cnday where
+		tdate=@date and emp_id=@emp_id
+	end
+if dbo.fnc_isweekend(@emp_id,@date)=0 
+begin
+--set @Device=(select  distinct max(INMODE) from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id)
+if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id) 
+	begin
+	
+	set @Device=(select  distinct max(INMODE) from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id)
+	set @workhour=(select TotalMin from #rpt_attendance_data where tdate= DATEADD(day,-1,@date) and emp_id=@emp_id)
+
+	set @cnday=(select CountDay from #rpt_attendance_data where tdate= DATEADD(day,-1,@date) and emp_id=@emp_id) 
+	--select @Device
+	if @Device='Device'
+		begin
+		update #rpt_attendance_data set TotalMin=@workhour,
+		HrsMin=dbo.MinutesToDuration(@workhour),
+		OT_Values=(@workhour-480),TotalOT='00:00',
+		CountDay=@cnday where
+		tdate=@date and emp_id=@emp_id
+
+		if (@workhour>=959 and @workhour<1890)
+		begin
+		
+			if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General 
+			where tdate=DATEADD(day,-1,@date) 
+			and emp_id=@emp_id AND intime>='13:00:00' AND OUTTIME>='14:00:00') 
+			begin
+					set @flag='dc'
+					set @Remarks='Duty Continue'  
+			END
+			else
+			begin
+				set @flag='abs' 
+				set @Remarks='Absent'  
+				update #rpt_attendance_data set	--outtime=@date,
+				intime='00:00',outtime='00:00',inremarks=null,outremarks=null, 
+				TotalMin=@workhour,HrsMin=null,OT_Values=0,TotalOT='00:00' 
+				where
+				tdate=@date and emp_id=@emp_id  
+			end
+		end
+	    else
+		if(@workhour>=1890 and @workhour<3360) 
+			begin
+			--if @cnday>0
+			--begin
+			--if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General 
+			--	where tdate=DATEADD(day,-@cnday,@date) and emp_id=@emp_id AND OUTTIME>='14:00:00') 
+			--		begin
+			--		set @flag='abs' 
+			--		set @Remarks='Absent'   
+			--		update #rpt_attendance_data set intime='00:00',outtime='00:00',
+			--		inremarks=null,outremarks=null,HrsMin='00:00',
+			--		OT_Values=0,TotalOT='00:00'
+			--		where
+			--		tdate=@date and emp_id=@emp_id 
+			--		end
+			--end
+			--else
+			--begin
+			set @flag='dc'
+			set @Remarks='Duty Continue' 
+			--end
+			end
+		else 
+		if(@workhour>=3360) 
+			begin
+			--if @cnday>0
+			--begin
+			--if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General 
+			--	where tdate=DATEADD(day,-@cnday,@date) and emp_id=@emp_id AND OUTTIME>='14:00:00') 
+			--		begin
+			--		set @flag='abs' 
+			--		set @Remarks='Absent'   
+			--		update #rpt_attendance_data set intime='00:00',outtime='00:00',
+			--		inremarks=null,outremarks=null,HrsMin='00:00',
+			--		OT_Values=0,TotalOT='00:00'
+			--		where
+			--		tdate=@date and emp_id=@emp_id 
+			--		end
+			--end
+			--else
+			--begin
+			set @flag='dc'
+			set @Remarks='Duty Continue' 
+			--end
+			end
+		else
+			begin
+				set @flag='abs' 
+				set @Remarks='Absent'   
+				update #rpt_attendance_data set intime='00:00',
+				outtime='00:00',inremarks=null,
+				outremarks=null, TotalMin=@workhour,HrsMin='00:00',
+				OT_Values=0,TotalOT='00:00' 
+				where tdate=@date and emp_id=@emp_id 
+			end
+	--update #rpt_attendance_data set OT_Values=0,TotalOT='0Min'                                                      
+	--where emp_id=@emp_id and tdate=@date
+		end
+		
+		---abs 
+			--set @cnday=(select CountDay from #rpt_attendance_data where tdate= @date and emp_id=@emp_id) 
+			--if @cnday>0
+			--begin
+			--set @outdt=(select TDATE_OUT from Tbl_Emp_Attn_Log_General where tdate=DATEADD(day,-@cnday,@date) and emp_id=@emp_id and COUNTER=1)
+			--set @outt=(select OUTTIME from Tbl_Emp_Attn_Log_General where tdate=DATEADD(day,-@cnday,@date) and emp_id=@emp_
+--id and COUNTER=1)
+			--if  convert(date,@date)=convert(date,@outdt)
+			--	begin
+			--	if @outt<='14:00:00'
+			--		begin
+			--		set @flag='abs1' 
+			--		set @Remarks='Absent'   
+			--		end
+			--	end
+			--end
+	end
+
+	
+end         
+
+--leave
+if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and taken =1 and LEAVE_ID not in (10))                       
+begin                                                
+set @flag='lev' 
+set @RLeave=''
+if exists(select  distinct EMP_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id) 
+	begin
+	set @flag='wol' 
+	set @RLeave='Worked on Leave : '
+	end
+set @time=0     
+                                                                        
+set @Remarks=@RLeave+(select  distinct linfo.leave_name +' ('+REMARKS+')'  from tbl_Org_Leave_Log llog 
+inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                                     
+
+
+update #rpt_attendance_data set DaysCount=1.00                                      
+	where emp_id=@emp_id and tdate=@date
+
+
+--set @inRemarks=null
+--set @inRemarks2=null
+
+
+end                                                    
+    
+if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and taken =0.5)                                   
+begin              
+set @flag='half'  
+set @time=@time/2                                                                          
+set @Remarks=(select  distinct linfo.leave_name +' (Half Day)'+' ('+REMARKS+')' from tbl_Org_Leave_Log llog 
+inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)                                                     
+
+update #rpt_attendance_data set DaysCount=1.00                                      
+	where emp_id=@emp_id and tdate=@date
+
+
+
+--set @inRemarks=null
+--set @inRemarks2=null
+
+
+end                                                                                  
+
+if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and leave_id=9)                       
+begin                                
+set @flag='lwop'                                      
+set @Remarks=(select  distinct linfo.leave_name+' ('+REMARKS+')'  from tbl_Org_Leave_Log llog 
+inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)      
+update #rpt_attendance_data set DaysCount=0.00                                      
+	where emp_id=@emp_id and tdate=@date
+
+end  
+
+
+if exists(select *from Tbl_Emp_ForceDuty where ondate=@date and Emp_ID=@emp_id) 
+	   begin   
+	    set @time=0 
+	   if exists(select distinct Emp_ID from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id ) 
+			begin    
+			 select @flag='woph',@Remarks='Worked on PH ('+HoliDay_Name+'['+convert(varchar(10),OnDate,111)+'])' 
+			 from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id
+			end                                             
+	   end 
+
+	   ----weekend leave holiday with working
+if dbo.fnc_isweekend(@emp_id,@date)=1          
+  begin 
+  --select distinct Emp_ID from Tbl_Emp_ForceDuty where Emp_ID=1991 and OnDate='2019-10-05'                 
+	     set @flag='wee'
+		 set @RLeave='' 
+	if exists(select *from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id 
+			and INTIME is not null) 
+		begin
+			 select @flag='wow',@Remarks='Worked in Weekend'   
+		end                                                         
+	if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and LEAVE_ID !=10)                       
+		begin                                
+			set @flag='wel'                                      
+			set @Remarks='Weekend & '+(select  distinct linfo.leave_name+' ('+REMARKS+')'  from tbl_Org_Leave_Log llog 
+			inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)      
+			
+			if exists(select *from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id 
+			and INTIME is not null) 
+			begin    
+			 set @flag='wowel'
+			 set @Remarks='Worked on Weekend & '+(select distinct linfo.leave_name+' ('+REMARKS+') '  from tbl_Org_Leave_Log llog 
+			inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id where emp_id=@emp_id and leave_date=@date)      
+			end
+		end
+	if exists(select *from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id) 
+	   begin   
+	   set @flag='weph'
+	   set @Remarks=(select 'Weekend & PH ('+HoliDay_Name+'['+convert(varchar(10),OnDate,111)+'])' 
+			 from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id)
+			set @Rholiday=@Remarks
+			if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date
+			and emp_id=@emp_id and LEAVE_ID !=10)                       
+			begin                                
+			set @flag='wephl'  
+			set @RLeave='& '+(select  distinct linfo.leave_name+' ('+llog.REMARKS+')'
+			  from tbl_Org_Leave_Log llog 
+			inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id 
+			where llog.EMP_ID=@emp_id and llog.Leave_Date=@date)
+
+			set @Remarks=@Rholiday+' '+@RLeave    
+			end
+
+			if exists(select *from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id 
+			and INTIME is not null) 
+			begin    
+			 set @flag='woweph'
+			 set @Remarks=(select 'Worked on Weekend & PH ('+HoliDay_Name+'['+convert(varchar(10),OnDate,111)+'])' 
+			 from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id)
+			-- set @Remarks=@Rholiday+' '+@RLeave
+			end                                           
+		end	 
+		if exists(select *from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and PHDate=@date and EarnPH=1)                                                          
+		 begin     
+			set @flag='wephsubon'  
+			select @Remarks='Weekend & '+ HoliDay_Name + ' Substituted on ['+convert(varchar(10),OnDate,111)+']'   
+			from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and PHDate=@date and EarnPH=1                                                                                      
+		 end 
+end
+if dbo.fnc_isweekend(@emp_id,@date)=0
+begin
+
+if exists(select *from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id and EarnPH=0) 
+	   begin   
+	   set @RLeave=''
+	   set @flag='hol'
+	   set @Remarks=(select 'PH ('+HoliDay_Name+'['+convert(varchar(10),OnDate,111)+'])' 
+			 from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id)
+			set @Rholiday=@Remarks
+			if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and LEAVE_ID !=10)                       
+			begin                                
+			set @flag='phl'  
+			set @RLeave='& '+(select  distinct linfo.leave_name+' ('+llog.REMARKS+')'
+			  from tbl_Org_Leave_Log llog 
+			inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id 
+			where llog.EMP_ID=@emp_id and llog.Leave_Date=@date)
+
+			set @Remarks=@Rholiday+' '+@RLeave    
+			end
+
+			if exists(select *from Tbl_Emp_Attn_Log_General where tdate=@date and emp_id=@emp_id 
+			and INTIME is not null) 
+			begin    
+			 set @flag='woph'
+			 set @RLeave=''
+			 set @Remarks=(select 'Worked on PH ('+HoliDay_Name+'['+convert(varchar(10),OnDate,111)+'])' 
+			 from Tbl_Emp_ForceDuty where OnDate=@date and Emp_ID=@emp_id)
+			if exists(select   distinct EMP_ID from tbl_org_leave_log where leave_date=@date and emp_id=@emp_id and LEAVE_ID !=10)                
+			begin                                
+				set @flag='wophl'  
+				set @RLeave='& '+(select  distinct linfo.leave_name+' ('+llog.REMARKS+')'
+				  from tbl_Org_Leave_Log llog 
+				inner join tbl_Org_leave_info linfo on llog.leave_id=linfo.leave_id 
+				where llog.EMP_ID=@emp_id and llog.Leave_Date=@date)
+			end
+			 if exists(select 1 from tbl_subweek where Emp_ID=@emp_id and Week_Day=@date)                                                          
+				 begin 
+				    set @flag='wesubon'     
+				  select @RLeave=(' & Weekend Sub. on '+CONVERT(varchar(10), Sub_Day,111))  
+				  from  tbl_subweek where Emp_Id=@emp_id and		Week_Day=@date    
+				 end
+			set @Remarks=@Remarks+@RLeave
+
+			 --set @Remarks=@Rholiday+' '+@RLeave
+			end                                           
+		end	
+		/*PH sub*/ 
+	 if exists(select *from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and OnDate=@date and EarnPH=1)               
+	begin     
+		 set @flag='phsubof'  
+		  select @Remarks= ('PH ['+ holiday_name +'] Substituted of '+CONVERT(varchar(11), PHDate,111))  
+		  from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and OnDate=@date and EarnPH=1                                                                             
+
+      
+              
+		 end
+		 declare @remarkwhph varchar(500)
+		 set @remarkwhph=NULL
+	 if exists(select *from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and PHDate=@date and EarnPH=1)                                              
+		 begin     
+		 set @flag='phsubon'  
+		 set @Remarks=''
+		  select @remarkwhph=HoliDay_Name + ' Substituted  on ['+convert(varchar(10),OnDate,111)+']'   
+		  from  Tbl_Emp_ForceDuty where Emp_Id=@emp_id and PHDate=@date and EarnPH=1        set @Remarks =@remarkwhph                                 
+if exists(select *from  Tbl_SubWeek where Emp_Id=@emp_id and Week_Day=@date)                                                       
+		 begin
+		 set @flag='wesubonphsubon'  
+		 set @Remarks=(select 'Weekend Substituted on ['+convert(varchar(10),Sub_Day,111)+'] & '+@Remarks  from  Tbl_SubWeek where Emp_Id=@emp_id and Week_Day=@date)
+		 end
+		 --set @Remarks=@Remarks+' & '+@remarkwhph
+		 end
+end
+/*weekend sub*/
+if exists(select 1 from tbl_subweek where Emp_ID=@emp_id and Sub_Day=@date)                                                          
+ begin       
+ set @flag='wesubof'  
+  select @Remarks=('Weekend Substitute of '+CONVERT(varchar(10), Week_Day,111))  
+  from  tbl_subweek where Emp_Id=@emp_id and Sub_Day=@date               
+ end  
+/*OT gen*/ 
+if exists(select *from  tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date)                  
+ begin       
+-- set @GenOT='GenOT' 
+--set @OTMIN=(select OT_Values*60 from  tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date) 
+  set @OTHRS=(select dbo.MinutesToDuration(OT_Values) from  tbl_emp_overtime_Approved where Emp_Id=@emp_id and tdate=@date)                                                                                                          
+ end                                                                            
+update #rpt_attendance_data set INREMARKS=@inRemarks,INREMARKS1=@inRemarks2,flag=@flag, Remark=@Remarks,
+GenOT=@OTHRS,DutyHrs=@time --,ISPAIDLEAVE=@ISPAIDLEAVE                                         
+where emp_id=@emp_id and tdate=@date    
+--update #rpt_attendance_data set INREMARKS=@inRemarks,INREMARKS1=@inRemarks2,flag=@flag, Remark=@Remarks,GenOT=@GenOT,DutyHrs=isnull(@time,0)--,ISPAIDLEAVE=@ISPAIDLEAVE                                                                        
+--where emp_id=@emp_id and tdate=@date                                                                              
+                                                                    
+  set @date=dateadd(day,1,@date)              
+                                                      
+               
+end                                                                               
+                      
+--end                           
+ FETCH NEXT FROM @EmpCursor into @emp_id                 
+END                          
+CLOSE @EmpCursor                          
+DEALLOCATE @EmpCursor 
+--end                                           
+ ----end 2nd begin                             
+ -- if (@Aflag=2 OR @Aflag=3)        
+                                                 
+                                                
+                
+ -- begin                                                                     
+                                                     
+                                                                        
+ -- update  #rpt_attendance_data set flag = 'abs' where flag='abl'               
+                                                 
+                   
+                      
+ -- end        
+--exec SalaryProcessAtten_data @emp_id, @date_from, @date_to  
+set nocount off  
+select * from #rpt_attendance_data  
+
+
+
+SELECT vi.EMP_ID,vi.emp_Fullname,vi.DEPT_NAME,vi.BRANCH_NAME,                              
+datediff(day,@date_from,@date_to)+1 as TotalDays,               
+--dbo.fnc_CountWeekend(@emp_id,@date_from,@date_to) as Weekend1,                        
+ (select COUNT(flag) from #rpt_attendance_data where flag in ('wee','wow') and emp_id=vi.EMP_ID)as Weekend,
+  (select COUNT(TDate_Out) from #rpt_attendance_data where flag in ('wow')and emp_id=vi.EMP_ID)as WorkedOnWeekend, 
+ (select COUNT(flag) from #rpt_attendance_data where flag='hol'and emp_id=vi.EMP_ID)as PH,
+ (select COUNT(TDate_Out) from #rpt_attendance_data where flag in ('woph')and emp_id=vi.EMP_ID)as WorkedOnPH,                                   
+(select COUNT(flag) from #rpt_attendance_data where flag not in ('hol','wee')and emp_id=vi.EMP_ID)as WorkingDay,  
+(select isnull(sum(DaysCount),0.00) from #rpt_attendance_data where emp_id=vi.EMP_ID and flag not in ('abs','wee','lve','hol','wow')) as PresentDays,                
+(select COUNT(flag) from #rpt_attendance_data where flag='abs' and emp_id=vi.EMP_ID)as AbsentDays,                                                    
+
+ (select COUNT(flag) from #rpt_attendance_data where flag  in ('wesubon')and emp_id=vi.EMP_ID)as WeekendSub,  
+ (select COUNT(flag) from #rpt_attendance_data where flag  in ('phsubon')and emp_id=vi.EMP_ID)as PHSub, 
+(select COUNT(flag) from #rpt_attendance_data where emp_id=@emp_id and flag not in ('abs','lwop')) as TotalPayable,
+(select ISNULL(sum(cast(TotalMin as int)),0) from #rpt_attendance_data where emp_id=vi.EMP_ID)as TotalWH,                       
+(select cast(cast(dbo.MtoH(ISNULL(sum(TotalMin),0)) AS float) as numeric(9, 2)) from #rpt_attendance_data where emp_id=vi.EMP_ID)as TH,                                          
+(select ISNULL(sum(OT_Values),0) from #rpt_attendance_data where emp_id=vi.EMP_ID and GenOT='GenOT')as TotalOTWH,                 
+(select cast(cast(dbo.MtoH(ISNULL(sum(OT_Values),0)) AS float) as numeric(9, 2)) from #rpt_attendance_data where emp_id=vi.EMP_ID 
+and GenOT='GenOT')as WH,                                                 
+                        
+ (SELECT dbo.MinToHrs(ISNULL(sum(TotalMin),0)) from #rpt_attendance_data where emp_id=vi.EMP_ID) as TotalWHrs,                         
+
+(select dbo.MinToHrs(ISNULL(sum(OT_Values),0)) from #rpt_attendance_data where emp_id=vi.EMP_ID and GenOT='GenOT')as OTWHrs,   
+
+(select dbo.MinToHrs(ISNULL(sum(DutyHrs),0)) from #rpt_attendance_data where emp_id=vi.EMP_ID )as DutyHrs,                        
+ (select  case when(ISNULL(sum(TotalMin),0)-ISNULL(sum(DutyHrs),0))>0 then
+  dbo.MinToHrs(ISNULL(sum(TotalMin),0)-ISNULL(sum(DutyHrs),0)) else
+  '-'+dbo.MinToHrs(ISNULL(sum(TotalMin),0)-ISNULL(sum(DutyHrs),0)) end
+ 
+ from #rpt_attendance_data where emp_id=vi.EMP_ID )as DiffHrs,          
+---- paid leave               
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID not in(10,9) and Leave_Date between @date_from and @date_to) as Paid_leave,            
+                      
+ (select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID in(9) and Leave_Date between @date_from and @date_to)as LWOP, 
+ 
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =3 and Leave_Date between @date_from and @date_to)as 'AL',  
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =4 and Leave_Date between @date_from and @date_to)as 'SL',  
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =5 and Leave_Date between @date_from and @date_to)as 'CL',  
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =6 and Leave_Date between @date_from and @date_to)as 'MOUR',  
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =7 and Leave_Date between @date_from and @date_to)as 'OL',  
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =8 and Leave_Date between @date_from and @date_to)as 'ML' , 
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID =13 and Leave_Date between @date_from and @date_to)as 'PL' , 
+
+(select isnull(sum(isnull(TAKEN,0.00)),0.00)  from Tbl_Org_Leave_Log where EMP_ID=vi.EMP_ID and LEAVE_ID not in(10) and Leave_Date between @date_from and @date_to)as TotalLeaveDays 
+                                                       
+from #rpt_attendance_data                             
+inner join view_emp_info vi on vi.EMP_ID=#rpt_attendance_data.EMP_ID                          
+left outer join tbl_org_leave_log on tbl_org_leave_log.emp_id=vi.emp_id and tbl_org_leavE_log.given is null                                    
+ left outer join tbl_org_leave_info on tbl_org_leave_info.leave_id=tbl_org_leave_log.leave_id                                    
+ where 
+ --(vi.branch_id like (case when @br_id=0 then '%' else cast(@br_id as varchar)  end)) and (vi.dept_id like (case when @dept_id=0 then '%' else cast(@dept_id as varchar) end))                               
+ --and 
+ #rpt_attendance_data.emp_id=vi.EMP_ID and  tdate between @date_from and @date_to          
+group by vi.EMP_ID ,vi.emp_Fullname,vi.DEPT_NAME,vi.BRANCH_NAME    
+order by vi.emp_id   
+
+drop table #rpt_attendance_data
+ --where tdate between @date_from and @date_to               
+--select dbo.MinToHrs( SUM(TotalMin)) as Wh,dbo.MinToHrs(SUM(OT_Values))as OT  from #rpt_attendance_data             
+                                                                         
+               
+  end   --end first begin 
