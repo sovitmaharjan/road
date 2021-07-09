@@ -1822,7 +1822,7 @@ namespace attendance
 
         public DataTable getHODList()
         {
-            string sql = "SELECT EMP_ID, emp_Fullname from view_emp_info where usertypeid = 3 and status_id = 1";
+            string sql = "SELECT EMP_ID, emp_Fullname, usertypeid from view_emp_info where usertypeid = 3 and status_id = 1";
             con.Open();
             SqlCommand cmd = new SqlCommand(sql, con);
             SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -1831,6 +1831,19 @@ namespace attendance
             con.Close();
             return dt;
         }
+
+        public DataTable getHODList2()
+        {
+            string sql = "SELECT EMP_ID, emp_Fullname, usertypeid from view_emp_info where status_id = 1 and usertypeid not in (4)";
+            con.Open();
+            SqlCommand cmd = new SqlCommand(sql, con);
+            SqlDataAdapter da = new SqlDataAdapter(cmd);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            con.Close();
+            return dt;
+        }
+
         public DataTable getHODbyID(int emp_id)
         {
             string sql = "SELECT HOD_ID, HOD_NAME from view_emp_info where EMP_ID =@emp_id and status_id = 1";
@@ -2591,7 +2604,7 @@ namespace attendance
             cmd.Parameters.AddWithValue("@Senior_EMP_ID", Senior_EMP_ID);
             cmd.Parameters.AddWithValue("@DAYPART", DAYPART);
             cmd.Parameters.AddWithValue("@LEAVETYPE", LEAVETYPE);
-            cmd.Parameters.AddWithValue("@STATUS", STATUS);
+            //cmd.Parameters.AddWithValue("@STATUS", STATUS);
             cmd.ExecuteNonQuery();
             con.Close();
         }

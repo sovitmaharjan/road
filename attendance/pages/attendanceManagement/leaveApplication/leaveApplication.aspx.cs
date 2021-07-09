@@ -18,7 +18,7 @@ namespace attendance.pages.attendanceManagement.leaveApplication {
             }
         }
         public void loadEmployee() {
-            DataTable dt = blu.getHODList();
+            DataTable dt = blu.getHODList2();
             DDLEMP.DataSource = dt;
             DDLEMP.DataTextField = "emp_fullname";
             DDLEMP.DataValueField = "EMP_ID";
@@ -38,12 +38,12 @@ namespace attendance.pages.attendanceManagement.leaveApplication {
                 TxtDept.Text = dt.Rows[0]["DEPT_NAME"].ToString();
                 TxtEmp.Text = dt.Rows[0]["emp_Fullname"].ToString();
                 TxtDesignation.Text = dt.Rows[0]["DEG_NAME"].ToString();
-                if (dt.Rows[0]["HOD_ID"].ToString() == "") {
-                    loadEmployee();
-                } else {
-                    DDLEMP.SelectedValue = dt.Rows[0]["HOD_ID"].ToString();
-                    Txtemp_id.Text = dt.Rows[0]["HOD_ID"].ToString();
-                }
+                //if (dt.Rows[0]["HOD_ID"].ToString() == "") {
+                //    loadEmployee();
+                //} else {
+                //    DDLEMP.SelectedValue = dt.Rows[0]["HOD_ID"].ToString();
+                //    Txtemp_id.Text = dt.Rows[0]["HOD_ID"].ToString();
+                //}
 
                 DataTable dt1 = blu.getleave_emp(emp_id);
                 if (dt1.Rows.Count == 0) {
@@ -54,6 +54,7 @@ namespace attendance.pages.attendanceManagement.leaveApplication {
                     TxtDesignation.Text = "";
                     TxtEmp.Text = "";
                 }
+
                 DDLLeaveName.DataSource = dt1;
                 DDLLeaveName.DataTextField = "LEAVE_NAME";
                 DDLLeaveName.DataValueField = "LEAVE_ID";

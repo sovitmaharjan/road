@@ -44,7 +44,7 @@ namespace attendance.pages.attendanceManagement.leaveCancellation
                 department.Items.Insert(0, "Select Department");
                 if (string.IsNullOrEmpty(Request.Params["month"]) == false)
                 {
-                    DataTable dtTableData = attendanceObject.queryFunction("exec proc_LeaveShow @empid=0, @year=" + Request.Params["year"] + ",@month=" + Request.Params["month"] + ", @date_type=0, @deptId=" + Request.Params["department"]);
+                    DataTable dtTableData = attendanceObject.queryFunction("exec proc_LeaveShow @empid=0, @year=" + Request.Params["year"] + ",@month=" + Request.Params["month"] + ", @date_type=0");
                     if (dtTableData.Rows.Count > 0)
                     {
                         string tableBodyRow = "";
