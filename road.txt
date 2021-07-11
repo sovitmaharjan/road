@@ -1,0 +1,978 @@
+tbl_emp_off_info
+	add column
+		login_id
+		login_password
+		usertypeid
+
+
+update Tbl_Emp_Off_Info set login_id = EMP_ID, usertypeid = 4
+
+update Tbl_Emp_Off_Info set usertypeid = 2 where EMP_ID = 715
+
+
+UPDATE Tbl_Emp_Off_Info 
+SET login_password = (
+    SELECT EMP_PASSWORD
+    FROM tbl_emp_info
+    WHERE Tbl_emp_off_info.EMP_ID = tbl_emp_info.EMP_ID
+);
+
+
+select * from Tbl_UserList
+
+
+CREATE TABLE [dbo].[Tbl_admin_info](
+	[id] [int] NOT NULL,
+	[name] [varchar](50) NULL,
+	[address1] [varchar](100) NULL,
+	[address2] [varchar](100) NULL,
+	[contact1] [varchar](50) NULL,
+	[contact2] [varchar](50) NULL,
+	[contact3] [varchar](50) NULL,
+	[fax] [varchar](50) NULL,
+	[email1] [varchar](50) NULL,
+	[email2] [varchar](50) NULL,
+	[website] [varchar](50) NULL,
+	[fullname] [varchar](100) NULL
+) ON [PRIMARY]
+
+
+1	Avighna	kupondole		(+977) 01-5905806	(+977) 01-5905807			info.avighnatech@gmail.com	info@avighnatechnology.com	www.avighnatechnology.com	Avighna Technologies Pvt. Ltd
+
+
+CREATE proc proc_WebActivation
+(
+@macAddress varchar(max),
+@serialkey varchar(max),
+@encryptDate varchar(max),
+@encryptPeriod varchar(max),
+@encryptDay varchar(max)
+
+)
+as 
+BEGIN
+	DECLARE @curdate date
+	SET @curdate= (SELECT CONVERT(VARCHAR(10), getdate(), 111))
+	IF exists(select * from Activation)
+	BEGIN
+		UPDATE Activation set HardwareID= @macAddress, ActivationID = @serialkey, L_Date= @encryptDate, L_D=@encryptDay, LID=@encryptPeriod, date =@curdate	 
+	END
+	ELSE
+	BEGIN
+		INSERT INTO Activation (HardwareID, ActivationID, L_Date, LID, L_D, [date]) 
+		VALUES (@macAddress, @serialkey, @encryptDate, @encryptPeriod, @encryptDay, @curdate)
+	END
+
+
+
+END
+
+
+CREATE TABLE [dbo].[tblMenu](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[title] [varchar](250) NULL,
+	[url] [varchar](250) NULL,
+	[iconClass] [varchar](250) NULL,
+	[sortOrderNumber] [int] NULL,
+	[subMenu] [int] NULL,
+ CONSTRAINT [PK_tblMenu] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+CREATE TABLE [dbo].[tblSubMenu1](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[title] [varchar](250) NULL,
+	[url] [varchar](250) NULL,
+	[sortOrderNumber] [varchar](250) NULL,
+	[subMenu] [varchar](250) NULL,
+	[menuId] [varchar](250) NULL,
+ CONSTRAINT [PK_tblSubMenu1] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+CREATE TABLE [dbo].[tblSubMenu2](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[title] [varchar](250) NULL,
+	[url] [varchar](250) NULL,
+	[sortOrderNumber] [varchar](250) NULL,
+	[subMenu] [varchar](250) NULL,
+	[subMenu1Id] [varchar](250) NULL,
+	[status] [int] NULL,
+ CONSTRAINT [PK_tblSubMenu2] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+CREATE TABLE [dbo].[tblSubMenu3](
+	[id] [int] NULL,
+	[title] [varchar](250) NULL,
+	[url] [varchar](250) NULL,
+	[sortOrderNumber] [varchar](250) NULL,
+	[subMenu] [varchar](250) NULL,
+	[subMenu2Id] [varchar](250) NULL
+) ON [PRIMARY]
+
+
+CREATE TABLE [dbo].[tblPermission](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[permission] [varchar](max) NULL,
+	[dateTime] [datetime] NULL,
+	[empId] [int] NULL,
+ CONSTRAINT [PK_tblPermission] PRIMARY KEY CLUSTERED 
+(
+	[id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+
+--select * from tblMenu
+--select * from tblSubMenu1
+--select * from tblSubMenu2
+--select * from tblSubMenu3
+--select * from tblpermission
+
+
+--exec permissionId 'deleteattn'
+create procedure permisssionId
+
+@page_name varchar (200)
+
+AS
+DECLARE
+@page_id varchar (10), @submenu2id varchar(10), @submenu1id varchar(10), @mainId varchar(20)
+
+if exists(select id from tblMenu where url  = @page_name)
+BEGIN
+	select @page_id = id from tblMenu where url  = @page_name
+	select  @page_id as page_id
+END
+else if exists(select id from tblSubMenu1 where url  = @page_name)
+BEGIN
+	select @page_id = convert(varchar, menuId) + '.' + convert(varchar,id) from tblSubMenu1 where url  = @page_name
+	select @page_id as page_id
+END
+else if exists(select id from tblSubMenu2 where url  = @page_name)
+BEGIN
+	select @submenu2id = id,@submenu1id = subMenu1Id from tblSubMenu2 where url  = @page_name
+	select @mainId = menuId from tblSubMenu1 where id = @submenu1id
+	select @mainId + '.' + @submenu1id + '.' + @submenu2id as page_id
+END
+else
+BEGIN
+	select @page_id = id from tblSubMenu3 where url  = @page_name
+	select '4' + '.' + @page_id as page_id
+END
+
+
+
+--select convert(varchar, m.id)+'.'+convert(varchar,m1.id)+'.'+convert(varchar,m2.id) as pageid from tblSubMenu2 m2 inner join tblSubMenu1 m1 on m2.subMenu1Id=m1.id inner join tblMenu m on m1.menuId=m.id
+
+
+sidebar menu
+attendance report
+	remove
+	attendance detail
+	daily absent
+	forceattendance
+
+leave report
+	leave info and leave taken bahek sabaiu remove
+
+other report remove all
+
+log history diable
+
+attendance management
+	remove
+	weekend sub
+	holiday sub
+	double duty sub
+
+
+
+menu
+1	Dashboard	Dashboard	mdi mdi-view-dashboard	1	0	1
+2	System Setup	NULL	mdi mdi-settings	2	1	1
+3	HR Management	NULL	mdi mdi-account-key	3	1	1
+4	Attendance Mgmt	NULL	mdi mdi-clock	4	1	1
+5	Outstation	outstationList	mdi mdi-calendar	5	0	1
+6	Report	NULL	mdi mdi-format-list-bulleted	7	1	1
+7	Permission	permission	mdi mdi-gavel	8	0	1
+8	Over Time Mgmt	overTimeManagement	mdi mdi-timer	6	0	1
+9	Log History	logHistory	mdi mdi-history	9	0	1
+10	Delete		mdi mdi-delete-forever	10	1	1
+11	Backup Database	BackupDatabase	mdi mdi-harddisk	11	0	1
+12	Export To IDS	ExportToIDS	mdi mdi-cash	12	0	1
+13	Subsitute Cancellation	SubsituteCancellation	mdi mdi-window-close	13	1	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL
+
+
+
+
+submenu1
+1	Company	Company	NULL	0	2
+2	Branch	BranchList	NULL	0	2
+3	Department	DepartmentList	NULL	0	2
+4	Grade	GradeList	NULL	0	2
+5	Designation	DesignationList	NULL	0	2
+6	Leave	LeaveList	NULL	0	2
+7	Public Holiday	NULL	NULL	1	2
+8	Roster	NULL	NULL	1	2
+9	Employee	EmployeeList	NULL	0	3
+10	Promotion	PromotionList	NULL	0	3
+11	Transfer	TransferList	NULL	0	3
+12	Force Attendance	ForceAttendance	NULL	0	4
+13	Force Attendance Batch	ForceAttendanceBatch	NULL	0	4
+14	Leave Application	LeaveApplication	NULL	0	4
+15	Leave Cancellation	LeaveCancellation	NULL	0	4
+16	Leave Assignment	LeaveAssignment	NULL	0	4
+17	Weekend Substitute	WeekendSubstitute	NULL	0	4
+18	Holiday Substitute	HolidaySubstitute	NULL	0	4
+19	Double Duty Substitute	DoubleDutySubstitute	NULL	0	4
+20	Attendance Report	NULL	NULL	1	6
+21	Leave Report	NULL	NULL	1	6
+22	Employee Info	NULL	NULL	1	6
+23	Roster Shift info	RosterShiftInfo	NULL	0	6
+24	Missing Punch	MissingPunch	NULL	0	6
+25	Other Report	NULL	NULL	1	6
+26	Log Activities	LogActivities	NULL	0	6
+27	Attendance	deleteAttendance	NULL	0	10
+28	Employee	deleteEmployee	NULL	0	10
+29	Leave	deleteLeave	NULL	0	10
+30	Leave Adjustment	LeaveAdjustment	NULL	0	4
+31	PH	SubsitutedPHCancellation	NULL	0	13
+32	Weekend	SubsitutedWeekendCancellation	NULL	0	13
+33	DD	SubsitutedDDCancellation	NULL	0	13
+34	Assigned PH	DeleteAssignedPH	NULL	0	10
+35	Sub Leave Lapse	SubsituteLeaveLapse	NULL	0	6
+36	Hod Assign	HODAssign	NULL	0	2
+NULL	NULL	NULL	NULL	NULL	NULL
+
+
+
+submenu2
+1	Setup	holidayList	NULL	0	7	1
+2	Assign	HolidayAssign	NULL	0	7	1
+3	Working Hour	workHourList	NULL	0	8	1
+4	Assign	rosterAssign	NULL	0	8	1
+5	Quick Attendance	quickAttendance	NULL	0	20	1
+6	Monthly Attendance	monthlyAttendance	NULL	0	20	1
+7	Datewise Attendance	datewiseAttendance	NULL	0	20	1
+8	Attendance Detail	attendanceDetail	NULL	0	20	1
+9	Daily Absent	dailyAbsent	NULL	0	20	1
+10	Leave Information	leaveInformation	NULL	0	21	1
+11	leave Taken Detail	leaveTakenDetail	NULL	0	21	1
+12	Employee Report	employeeReport	NULL	0	22	1
+13	Employee Detail Info	employeeDetailInfo	NULL	0	22	1
+14	Promotion Report	promotionReport	NULL	0	25	1
+15	Transfer Report	transferReport	NULL	0	25	1
+16	Duty Shortage	DutyShortageForm	NULL	0	20	1
+17	Departmentwise Leave Taken Summary	DepartmentwiseLeaveTakenSummary	NULL	0	21	1
+18	Datewise Leave Taken Report	DatewiseLeaveTakenReport	NULL	0	21	1
+19	Departmentwise Leave Balance Summary	DepartmentwiseLeaveBalanceSummary	NULL	0	21	0
+20	Individual Leave Taken Summary	IndividualLeaveTakenSummary	NULL	0	21	1
+21	Individual Leave Balance Summary	IndividualLeaveBalanceSummary	NULL	0	21	1
+22	Force Attendance	ForceAttendanceForm	NULL	NULL	20	1
+23	LeaveApplication	LeaveApplicationLog	NULL	0	26	1
+24	LeaveCancellation	LeaveCancellationLog	NULL	NULL	26	1
+25	ForceAttendance	ForceAttendanceLog	NULL	NULL	26	1
+26	OverTimeManagement	OverTimeManagementLog	NULL	NULL	26	1
+27	ManageRoster	ManageRosterLog	NULL	NULL	26	1
+28	ManageEmployee	ManageEmployeeLog	NULL	NULL	26	1
+NULL	NULL	NULL	NULL	NULL	NULL	NULL
+
+
+#######################################################
+
+tblpermission
+7	allEmployeeForm=off/1=on/2=on/2.1=on/2.2=on/2.3=on/2.4=on/2.5=on/2.6=on/2.7=on/2.7.1=on/2.7.2=on/2.8=on/2.8.3=on/2.8.4=on/2.36=on/3=on/3.9=on/3.10=on/3.11=on/4=on/4.12=on/4.13=on/4.14=on/4.15=on/4.16=on/4.17=on/4.18=on/4.19=on/4.30=on/5=on/6=on/6.20=on/6.20.5=on/6.20.6=on/6.20.7=on/6.20.8=on/6.20.9=on/6.20.16=on/6.20.22=off/6.21=on/6.21.10=on/6.21.11=on/6.21.17=on/6.21.18=on/6.21.20=on/6.21.21=on/6.22=on/6.22.12=on/6.22.13=on/6.23=on/6.24=on/6.25=on/6.25.14=on/6.25.15=on/6.26=on/6.35=on/7=on/8=on/9=on/10=on/10.27=on/10.28=on/10.29=on/10.34=on/11=on/12=on/13=on/13.31=on/13.32=on/13.33=off	2021-03-05 00:00:00.000	715
+
+
+
+
+
+#######################################################
+
+--exec proc_working_Shift 10008,'2020-03-08','2020-03-08',1
+CREATE proc proc_working_Shift
+(
+@empid int,
+@date1 date,
+@date2 date,
+@counter int 
+)
+as
+begin
+CREATE TABLE #atten (                                  
+     Emp_Id varchar (20),
+	 WORK_ID int,
+	 Tdate date ,
+	 TDate_Out date ,
+	 InTime varchar (20),
+	 InDay varchar (10),
+	 INMode varchar (20),
+	 OutTime varchar (50),
+	 OutDay varchar (10),
+	 OutMode varchar (20),
+	 [Duty_Roster] varchar (50)
+	 )
+declare @date as datetime
+declare @DIntime as varchar(100)
+declare @DOuttime as varchar(100)
+declare @Intime as varchar(100)
+declare @Outtime as varchar(100)
+declare @shift int
+declare @duty varchar(100)
+declare @group int
+set @date=@date1              
+  while @date <= @date2
+  begin
+ 
+
+	set @group=(select Group_id from Tbl_Org_WorkingHrs where Emp_Id=@empid and Sdate=@date)
+	  set @Intime=(select INTIME from Tbl_Emp_Attn_Log_General where EMP_ID=@empid and TDATE=@date and COUNTER=@counter)
+	  if @group=0
+		begin
+		 set @shift=(select WORK_ID from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 set @duty=(select IN_END+'-'+OUT_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 end
+		select 
+		@DIntime=ossg.IN_START,@DOuttime=ossg.OUT_END from Tbl_Org_WorkingHrs owh 
+		inner join Tbl_Org_Shift_Group sag on owh.Group_id=sag.Group_ID
+		inner join Tbl_Org_Working_Hrs ossg on sag.WH_ID=ossg.WORK_ID 
+		where 
+		owh.Emp_Id=@empid and owh.Sdate=@date
+
+		if @group=0
+		begin
+		 set @shift=(select WORK_ID from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 set @duty=(select IN_END+'-'+OUT_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 set @DIntime=(select IN_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 set @DOuttime=(select OUT_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+		 end
+	  if @Intime is null
+	  begin
+	  set @Intime=@DIntime
+	  end
+	  set @Outtime=(select OUTTIME from Tbl_Emp_Attn_Log_General where EMP_ID=@empid and TDATE=@date and COUNTER=@counter)
+	  if @Outtime is null
+	  begin
+	   set @Outtime=@DOuttime
+	  end
+	insert into #atten (Emp_Id,WORK_ID,Tdate,TDate_Out,InTime,INMode,OutTime,OutMode,[Duty_Roster],InDay,OutDay)
+	select @empid,
+ossg.WORK_ID,@date,@date,@Intime,'',@Outtime, '',
+	ossg.IN_START+'-'+ossg.OUT_END as Duty_Roster,
+	convert(varchar(3), DATENAME(weekday, @date)),
+	convert(varchar(3), DATENAME(weekday, @date)) from Tbl_Org_WorkingHrs owh 
+	inner join Tbl_Org_Shift_Group sag on owh.Group_id=sag.Group_ID
+	inner join Tbl_Org_Working_Hrs ossg on sag.WH_ID=ossg.WORK_ID 
+	where Emp_Id=@empid and owh.Sdate =@date
+	if @group=0
+	begin
+	 set @shift=(select WORK_ID from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+	 set @duty=(select IN_END+'-'+OUT_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+	insert into #atten (Emp_Id,WORK_ID,Tdate,TDate_Out,InTime,INMode,OutTime,OutMode,[Duty_Roster],InDay,OutDay)
+	select EMP_ID,@shift,@date,@date,'09:00:00',NULL,'17:00:00',NULL,@duty ,
+	convert(varchar(3), DATENAME(weekday, @date)),
+	convert(varchar(3), DATENAME(weekday, @date))
+	from view_Emp_Info where EMP_ID=@empid 
+	end
+	if not exists(select * from Tbl_Org_WorkingHrs where Emp_Id=@empid and Sdate=@date)
+	begin
+	 set @shift=(select WORK_ID from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+	 set @duty=(select IN_END+'-'+OUT_END from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1)
+	insert into #atten (Emp_Id,WORK_ID,Tdate,TDate_Out,InTime,INMode,OutTime,OutMode,[Duty_Roster],InDay,OutDay)
+	select EMP_ID,@shift,@date,@date,'09:00:00',NULL,'17:00:00',NULL,@duty,
+	convert(varchar(3), DATENAME(weekday, @date)),
+	convert(varchar(3), DATENAME(weekday, @date))
+	from view_Emp_Info where EMP_ID=18 
+	end
+
+	set @date=dateadd(day,1,@date)  
+	
+
+	
+	
+	end
+	 
+	select * from #atten
+	DROP TABLE #atten 
+end
+
+--exec proc_working_Shift 20573,'2020-01-01','2020-01-02'
+--select * from Tbl_Org_Shift_Group
+--select * from Tbl_Org_Working_Hrs
+
+
+
+
+
+##################################################
+CREATE Proc Proc_Manage_EMP_Attn
+@EMP_ID varchar(10),
+@TDATE datetime,
+@INTIME datetime,
+@INREMARKS varchar(500),
+@INMODE varchar(500),              
+@TDATE_OUT datetime,
+@OUTTIME datetime,
+@OUTMODE nvarchar(500),
+@OUTREMARKS  nvarchar(500),@flag int,
+@manualin tinyint=0,
+@manualout tinyint=0,          
+@counter int =1            
+as                
+SET NOCOUNT ON                
+              
+ --set @counter=1              
+DECLARE @WORKID int                
+BEGIN                
+	IF exists(select EMP_ID from tbl_org_workinghrs where EMP_ID=@EMP_ID)                
+		BEGIN                
+		--select @WORKID=WORKHOUR_ID from tbl_org_workinghrs where Day_Id=(SELECT               
+		-- DATEPART(dw, @TDATE))and tbl_org_workinghrs.EMP_ID=@EMP_ID    
+   
+			SELECT @WORKID=sg.WH_ID from tbl_org_workinghrs wh
+			inner join Tbl_Org_Shift_Group sg on wh.Group_id=sg.Group_ID where Emp_Id=@EMP_ID and Sdate=@TDATE     
+		END                
+	ELSE                
+		BEGIN  
+
+		select @WORKID=WORK_ID from Tbl_Org_Working_Hrs where IS_DEFAULTSHIFT=1
+			--SELECT @WORKID=sg.WH_ID from tbl_org_workinghrs wh
+			--inner join Tbl_Org_Shift_Group sg on wh.Group_id=sg.Group_ID where Emp_Id=@EMP_ID and Sdate=@TDATE               
+			----select @WORKID=WORKHOUR_ID from tbl_org_workinghrs where Day_Id=(SELECT               
+			-- DATEPART(dw, @TDATE))and tbl_org_workinghrs.EMP_ID=0                
+		END
+		
+		--select * from Tbl_Org_Working_Hrs
+		           
+	--For Open Shift           
+    IF @WORKID is null          
+		BEGIN          
+			set rowcount @counter          
+			select @WORKID=dbo.fnc_GetOpenShiftWorkID(@EMP_ID, @counter, @TDATE)          
+			set rowcount 0          
+		END  
+
+		-- SELECT * FROM Tbl_DeviceAttenLog
+		DECLARE @Mstindx INT=0,@indx INT=0        
+         SELECT @Mstindx=MAX(Mstindx),@indx=MAX(indx) FROM Tbl_DeviceAttenLog
+	IF(@flag=0)  --in only             
+		BEGIN              
+			IF exists(select * from Tbl_Emp_Attn_Log_general where EMP_ID=@EMP_ID and (TDATE=@TDATE /*or TDATE_OUT=@TDATE_OUT*/) and counter=@counter)              
+				BEGIN              
+					UPDATE Tbl_Emp_Attn_Log_general set TDATE=@TDATE,INTIME=convert(varchar(8), CONVERT(time,@INTIME, 0)),INMODE=@INMODE,              
+							counter=@counter              
+					WHERE EMP_ID=@EMP_ID and (TDATE=@TDATE) and counter=@counter 
+					
+					--insert into Tbl_DeviceAttenLog VALUES(@indx,@EMP_ID,0,0,@TDATE,@INTIME,0,@Mstindx,NULL)            
+				END                
+			ELSE              
+				BEGIN              
+					INSERT into Tbl_Emp_Attn_Log_general (EMP_ID,WORKHOUR_ID,TDATE,INTIME,INMODE,INREMARKS,OUTTIME,OUTMODE,OUTREMARKS,COUNTER )--,Is_manualIn,Is_manualOut,counter)              
+					VALUES(@EMP_ID,1,@TDATE,convert(varchar(8), CONVERT(time,@INTIME, 0)),@INMODE,@INREMARKS,NULL,NULL,NULL,@counter)--,@manualin,@manualout,@counter)  
+				--select * from Tbl_DeviceAttenLog	
+				insert into Tbl_DeviceAttenLog
+				(indx,Emp_ID,VerifyMode,InOutMode,LogDate,LogTime,ExtractedFrom,Mstindx)
+				 VALUES(@indx,@EMP_ID,0,0,@TDATE,convert(varchar(8), CONVERT(time,@INTIME, 0)),0,@Mstindx)                   
+				END                       
+		END 
+	IF(@flag=1)  --OUT only             
+		BEGIN              
+			IF exists(select *  from Tbl_Emp_Attn_Log_general where EMP_ID=@EMP_ID and (TDATE=@TDATE) and counter=@counter)              
+				BEGIN 
+				--if  exists(select *  from Tbl_Emp_Attn_Log_general where EMP_ID=@EMP_ID and (TDATE=@TDATE) and INTIME is not null and counter=@counter)              
+				--BEGIN            
+					UPDATE Tbl_Emp_Attn_Log_general set TDATE_OUT=@TDATE_OUT,OUTTIME=convert(varchar(8), CONVERT(time,@OUTTIME, 0)),
+					OUTMODE=@OUTMODE,OUTREMARKS=@OUTREMARKS,counter=@counter              
+					WHERE EMP_ID=@EMP_ID and (TDATE=@TDATE)  and counter=@counter  
+
+					insert into Tbl_DeviceAttenLog
+					(indx,Emp_ID,VerifyMode,InOutMode,LogDate,LogTime,ExtractedFrom,Mstindx)
+					 VALUES(@indx,@EMP_ID,0,1,@TDATE_OUT,convert(varchar(8), CONVERT(time,@OUTTIME, 0)),0,@Mstindx)   
+					--INSERT into Tbl_Emp_Attn_Log_general (EMP_ID,WORKHOUR_ID,TDATE,TDATE_OUT,OUTTIME,OUTMODE,OUTREMARKS,COUNTER )--,Is_manualIn,Is_manualOut,counter)              
+					--VALUES(@EMP_ID,1,@TDATE,@TDATE_OUT, RIGHT(CONVERT(VARCHAR,@OUTTIME),7),@OUTMODE,@OUTREMARKS,@counter)--,@manualin,@manualout,@counter)                               
+				declare @date datetime, @rem varchar(50)
+				set @date=dateadd(day,1,@TDATE)  
+				while @date <= @TDATE_OUT --if (@TDATE!=@TDATE_OUT)
+				begin
+				set @rem='From '+ convert(varchar(10),@TDATE,111)+' to '+ convert(varchar(10),@TDATE_OUT,111) 
+				Insert into tbl_emp_attn_log_general 
+				(emp_id,workhour_id,counter,tdate,tdate_out,intime,inmode,inremarks,outtime,outmode,att_status) 
+				values
+				(@EMP_ID,1,@counter,@date,@date,'00:00:00','Device',@rem,'00:00:00','Device',0)
+				 set @date=dateadd(day,1,@date)  
+				end
+				END                
+			--ELSE              
+			--	BEGIN  
+				            
+					
+			--	END                       
+		END                     
+	IF(@flag=2)   --BOTH            
+		BEGIN
+			IF exists(select *  from Tbl_Emp_Attn_Log_general where EMP_ID=@EMP_ID and (TDATE=@TDATE /*or TDATE_OUT=@TDATE_OUT*/)  and counter=@counter)              
+				BEGIN              
+					UPDATE Tbl_Emp_Attn_Log_general set TDATE=@TDATE,INTIME=convert(varchar(8), CONVERT(time,@INTIME, 0)),
+					INMODE=@INMODE,INREMARKS=@INREMARKS, TDATE_OUT=@TDATE_OUT,OUTTIME=convert(varchar(8), CONVERT(time,@OUTTIME, 0)),
+					OUTMODE=@OUTMODE,OUTREMARKS=@OUTREMARKS,counter=@counter   
+					WHERE EMP_ID=@EMP_ID and (TDATE=@TDATE)      
+					
+					      
+				END                
+			ELSE              
+				BEGIN 
+					INSERT into Tbl_Emp_Attn_Log_general (EMP_ID,WORKHOUR_ID,TDATE,INTIME,INMODE,INREMARKS,TDATE_OUT,OUTTIME,OUTMODE,OUTREMARKS,COUNTER)--,Is_manualIn,Is_manualOut,counter)              
+					VALUES(@EMP_ID,1,@TDATE,convert(varchar(8), CONVERT(time,@INTIME, 0)),@INMODE,@INREMARKS,@TDATE_OUT, convert(varchar(8), CONVERT(time,@OUTTIME, 0)),@OUTMODE,@OUTREMARKS,@counter )                    
+				
+					insert into Tbl_DeviceAttenLog
+					(indx,Emp_ID,VerifyMode,InOutMode,LogDate,LogTime,ExtractedFrom,Mstindx)
+					 VALUES(@indx,@EMP_ID,0,0,@TDATE, convert(varchar(8), CONVERT(time,@INTIME, 0)),0,@Mstindx)   
+					insert into Tbl_DeviceAttenLog(indx,Emp_ID,VerifyMode,InOutMode,LogDate,LogTime,ExtractedFrom,Mstindx)
+					 VALUES(@indx+1,@EMP_ID,0,1,@TDATE_OUT,convert(varchar(8), CONVERT(time,@OUTTIME, 0)),0,@Mstindx) 
+				END             
+		END 
+		
+		--declare @ddmin int
+		--set @ddmin=0
+		--select* from                
+ END
+
+
+
+
+
+##############################################
+
+
+--exec proc_systemLog 'full Annual leave',11638,'add leave',"2020-09-01",1,10008
+
+--select * from Tbl_System_Log
+--1 = "Leave Application";
+--2 = "Leave Cancellation";
+--3 = "Force Attendance";
+--4 = "Employee";
+--5 = "OverTime";
+
+CREATE proc proc_systemLog
+(
+	@remarks varchar(max),
+	@emp_id int,
+	@event_info varchar(max),
+	@event_date varchar(max),
+	@event_type varchar (max),
+	@login_id int
+)
+AS
+BEGIN
+	DECLARE
+	@log_time varchar(50),
+	@log_date varchar(50),
+	@dept_id int,
+	@branch_id int
+
+	set @log_time  =( select convert(varchar, getdate(), 108))
+	select @log_date = CONVERT (DATE, SYSDATETIME());
+	set @dept_id = (select dept_id from view_emp_info where EMP_ID = @emp_id)
+	set @branch_id = (select branch_id from view_emp_info where EMP_ID = @emp_id)
+
+	INSERT INTO Tbl_System_Log (log_time, log_date, remarks, emp_id, dept_id, branch_id, event_info, event_date, event_type,login_id)
+		 VALUES (@log_time, @log_date, @remarks, @emp_id, @dept_id, @branch_id, @event_info, @event_date, @event_type, @login_id )
+
+END
+
+
+
+
+
+
+####################################################
+
+CREATE TABLE [dbo].[Tbl_System_Log](
+	[log_id] [int] IDENTITY(1,1) NOT NULL,
+	[log_time] [varchar](50) NULL,
+	[log_date] [smalldatetime] NULL,
+	[remarks] [varchar](max) NULL,
+	[emp_id] [int] NULL,
+	[dept_id] [int] NULL,
+	[branch_id] [int] NULL,
+	[event_info] [varchar](100) NULL,
+	[event_date] [smalldatetime] NULL,
+	[event_type] [int] NULL,
+	[login_id] [int] NULL,
+ CONSTRAINT [PK_Tbl_System_Log] PRIMARY KEY CLUSTERED 
+(
+	[log_id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+
+
+##############################################################
+
+/*select * from view_Emp_Info  
+select * from view_emp_info  
+select * from view_emp_info              
+ select * from Tbl_Emp_Rep                */
+alter VIEW dbo.view_Emp_Info
+AS
+SELECT     TOP (100) PERCENT dbo.Tbl_Emp_Info.EMP_ID, dbo.Tbl_Emp_Info.EMP_TITLE, dbo.Tbl_Emp_Info.EMP_FIRSTNAME, dbo.Tbl_Emp_Info.EMP_MIDDLENAME, dbo.Tbl_Emp_Info.EMP_LASTNAME, 
+                      dbo.Tbl_Emp_Info.EMP_TADD, dbo.Tbl_Emp_Info.EMP_PADD, dbo.Tbl_Emp_Info.EMP_TSTREET, dbo.Tbl_Emp_Info.EMP_PSTREET, dbo.Tbl_Emp_Info.EMP_TDISTRICT, 
+                      dbo.Tbl_Emp_Info.EMP_PDISTRICT, dbo.Tbl_Emp_Info.EMP_TZONE, dbo.Tbl_Emp_Info.EMP_PZONE, dbo.Tbl_Emp_Info.EMP_TCOUNTRY, dbo.Tbl_Emp_Info.EMP_PCOUNTRY, 
+                      dbo.Tbl_Emp_Info.EMP_CITIZENSHIPNO, dbo.Tbl_Emp_Info.EMP_PHONE, dbo.Tbl_Emp_Info.EMP_DOB, dbo.Tbl_Emp_Info.EMP_EDUCATION, dbo.Tbl_Emp_Info.EMP_PHOTO, 
+                      dbo.Tbl_Emp_Info.EMP_PASSWORD, dbo.Tbl_Emp_Info.EMP_SIGNINMODE, dbo.Tbl_Emp_Info.EMP_JOINDATE, dbo.Tbl_Emp_Info.UpTo_Date, dbo.Tbl_Emp_Info.EMP_CARDID, 
+                      dbo.Tbl_Emp_Info.EMP_MOBILE, dbo.Tbl_Emp_Info.EMP_GENDER, dbo.Tbl_Emp_Info.EMP_MARITALSTATUS, dbo.Tbl_Emp_Info.EMP_PEMAIL, dbo.Tbl_Emp_Info.EMP_USERID, 
+                      dbo.Tbl_Emp_Info.DeviceUserID, dbo.Tbl_Emp_Info.EMP_IMAGE, CASE WHEN Tbl_Emp_Info.EMP_TITLE IS NULL OR
+                      Tbl_Emp_Info.EMP_TITLE = '' THEN '' ELSE Tbl_Emp_Info.EMP_TITLE + ' ' END + dbo.Tbl_Emp_Info.EMP_FIRSTNAME + ' ' + CASE WHEN Tbl_Emp_Info.EMP_MIDDLENAME IS NULL OR
+                      Tbl_Emp_Info.EMP_MIDDLENAME = '' THEN '' ELSE Tbl_Emp_Info.EMP_MIDDLENAME + ' ' END + dbo.Tbl_Emp_Info.EMP_LASTNAME AS emp_Fullname, 'English' AS DateType, 
+                      CASE WHEN Tbl_Emp_Info.EMP_GENDER = 'M' THEN 'Male' ELSE 'Female' END AS GENDER, 
+                      CASE Tbl_Emp_Info.EMP_MARITALSTATUS WHEN 'S' THEN 'Single' WHEN 'M' THEN 'Married' WHEN 'D' THEN 'Divorced' ELSE '' END AS MARITALSTATUS, dbo.Tbl_Emp_Off_Info.DEG_ID, 
+                      dbo.Tbl_Org_Desg.DEG_NAME, sect.DEPT_NAME AS section_name, sect.DEPT_ID AS sect_id, sect.DEPT_NAME AS sect_name, dbo.Tbl_Emp_Off_Info.STATUS_ID, dbo.Tbl_Emp_Off_Info.MODE_ID, 
+                      dbo.Tbl_Org_Grade.GRADE_NAME, dbo.Tbl_Sys_Modes.MODE_NAME, dbo.Tbl_Comp_Branch.BRANCH_NAME, G1.GRADE_ID, dbo.Tbl_Emp_Rep.NAME, 
+                      dbo.Tbl_Emp_Rep.NAME AS Emergency_Name, dbo.Tbl_Emp_Rep.ADDRESS, dbo.Tbl_Emp_Rep.ADDRESS AS Emergency_Address, dbo.Tbl_Emp_Rep.RELATION, 
+                      dbo.Tbl_Emp_Rep.RELATION AS Emergency_Relation, dbo.Tbl_Emp_Rep.CONTACT, dbo.Tbl_Emp_Rep.CONTACT AS Emergency_Contact, dbo.Tbl_Emp_Off_Info.RESIGN_DT, 
+                      dbo.Tbl_Emp_Off_Info.PERMANENT_DT, dbo.Tbl_Emp_Off_Info.pf_number, dbo.Tbl_Emp_Off_Info.bankAC, dbo.Tbl_Emp_Off_Info.BANK_ID, dbo.Tbl_Emp_Off_Info.cit_number, 
+                      dbo.Tbl_Emp_Off_Info.epan_number, dbo.Tbl_Emp_Off_Info.PDTo, dbo.Tbl_Emp_Off_Info.IsOT, dbo.Tbl_Emp_Off_Info.PDFrom, dbo.Tbl_Emp_Off_Info.ROOMNO, 
+                      dbo.Tbl_Emp_Off_Info.CARDEXPDATE, dbo.Tbl_Emp_Off_Info.LICENCEEXPDATE, dbo.Tbl_Emp_Off_Info.LICENCENO, dbo.Tbl_Emp_Off_Info.VEHICLENO, dbo.Tbl_Emp_Off_Info.CARDNO, 
+                      dbo.Tbl_Emp_Off_Info.EXT, dbo.Tbl_Stat.STATUS_NAME, dbo.Tbl_Org_Grade.GRADE_TYPE, dbo.Tbl_Emp_Off_Info.OFFEMAIL, dbo.Tbl_Emp_Off_Info.BRANCH_ID, dept.DEPT_NAME, dept.DEPT_ID, 
+                      dbo.Tbl_Emp_Off_Info.WEB_USER, dbo.Tbl_Emp_Off_Info.enable_web_login, dbo.Tbl_Emp_DBID.PID, dbo.Tbl_Emp_Info.EMP_IMAGE AS Expr1, dbo.Tbl_Emp_Info.BLOOD_GROUP, 
+                      dbo.Tbl_Emp_Info.ALLERGY, dbo.Tbl_Emp_Info.MED_CON, dbo.Tbl_Emp_Info.DOCTOR, dbo.Tbl_Emp_Info.DOCTOR_CONTACT, dbo.Tbl_Emp_Info.DOCTOR1, 
+                      dbo.Tbl_Emp_Info.DOCTOR_CONTACT1, dbo.Tbl_Emp_Off_Info.EMP_ATTGROUP, dbo.Tbl_Emp_Off_Info.Fileno,
+					  dbo.Tbl_Emp_Off_Info.IsRound, dbo.Tbl_Emp_Off_Info.usertypeid
+FROM         dbo.Tbl_Emp_DBID INNER JOIN
+                  dbo.Tbl_Emp_Off_Info INNER JOIN
+                      dbo.Tbl_Org_Dept AS sect ON dbo.Tbl_Emp_Off_Info.DEPT_ID = sect.DEPT_ID INNER JOIN
+                      dbo.Tbl_Emp_Info ON dbo.Tbl_Emp_Off_Info.EMP_ID = dbo.Tbl_Emp_Info.EMP_ID INNER JOIN
+                      dbo.Tbl_Sys_Modes ON dbo.Tbl_Emp_Off_Info.MODE_ID = dbo.Tbl_Sys_Modes.MODE_ID INNER JOIN
+                      dbo.Tbl_Org_Grade ON dbo.Tbl_Emp_Off_Info.GRADE = dbo.Tbl_Org_Grade.GRADE_ID INNER JOIN
+                      dbo.Tbl_Org_Dept AS dept ON sect.DEPT_PARENT = dept.DEPT_NAME INNER JOIN
+                      dbo.Tbl_Comp_Branch ON dbo.Tbl_Emp_Off_Info.BRANCH_ID = dbo.Tbl_Comp_Branch.BRANCH_ID INNER JOIN
+                      dbo.Tbl_Org_Desg ON dbo.Tbl_Emp_Off_Info.DEG_ID = dbo.Tbl_Org_Desg.DEG_ID ON dbo.Tbl_Emp_DBID.PID = dbo.Tbl_Emp_Off_Info.PID INNER JOIN
+                      dbo.Tbl_Org_Grade AS G1 ON G1.GRADE_ID = dbo.Tbl_Emp_Off_Info.GRADE INNER JOIN
+                      dbo.Tbl_Stat ON dbo.Tbl_Stat.STATUS_ID = dbo.Tbl_Emp_Off_Info.STATUS_ID INNER JOIN
+                      dbo.Tbl_Emp_Rep ON dbo.Tbl_Emp_Info.EMP_ID = dbo.Tbl_Emp_Rep.EMP_ID
+ORDER BY dbo.Tbl_Emp_Info.EMP_FIRSTNAME, dbo.Tbl_Emp_Info.EMP_MIDDLENAME, dbo.Tbl_Emp_Info.EMP_LASTNAME
+
+
+
+
+
+###################################################################
+
+
+
+-- nHu for LEave Show
+-- exec proc_LeaveShow @empid=201, @date=2068,@month=2,@date_type=1
+-- exec proc_LeaveShow @empid=715, @year=2021,@month=7,@date_type=0
+
+alter         proc [dbo].[proc_LeaveShow]
+
+@empid as int, @year as int,@month as int,@date_type as int
+
+as
+ declare @nepali_date as datetime
+ declare @start_date as datetime
+ declare @end_date as datetime
+begin
+
+ if @date_type=0
+     begin
+
+       -- Print 'English Date'
+	declare @edate datetime
+	declare @sdate datetime
+	select @sdate=dateadd(yy,(@year-1900),0) + dateadd(mm,@month-1,0) + 0-1	
+
+	select @edate=DATEADD(mm,1,@sdate)
+	select @edate=DATEADD(dd,-1,@edate)
+	--print @edate
+	
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where Tbl_Org_Leave_Log.Emp_ID = @empid and 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @sdate 
+	and @edate 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+
+
+
+
+
+
+
+
+
+/*	   select max(linfo.leave_name) 'Leave Name',max(convert(varchar,leave.leave_date,101)) as[English Date],
+         max(convert(varchar,leave.leave_date,101)) as [Taken Date],
+		 max(case leave.taken
+			when '1' then 'Full Leave'
+			when '2' then 'Half Leave'
+		 end) as Taken,
+
+		max(leave.remarks) as [Remarks],max(view_Emp_Info.emp_Fullname) as [Approved By]
+		from tbl_org_leave_log leave 
+		inner join tbl_org_leave_info linfo
+		on linfo.leave_id=leave.leave_id
+		inner join view_Emp_info on leave.ApprovedBy=View_Emp_Info.Emp_Id
+		where leave.emp_id=@empid and  cast(datepart(yy,leave.Leave_date)as int)=@date and cast(datepart(mm,leave_date)as int)=@month
+         group by leave.leave_date
+*/
+    end
+else
+  begin
+  
+     set @nepali_date =(SELECT * FROM fncNepaliToEnglishConversion(@year,@month,1))
+    -- print @nepali_date     
+    set @start_date=(select startday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @start_date
+    set @end_date=(select endday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @end_date
+    
+
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where Tbl_Org_Leave_Log.Emp_ID = @empid and 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @start_date 
+	and @end_date 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+ 
+      
+     
+  end
+
+end
+
+
+
+-- select *from tbl_org_leave_log where emp_id=201 and Leave_date between '2011-04-14' and '2011-05-14' 
+
+
+
+
+
+####################################################
+
+
+
+
+-- nHu for LEave Show
+-- exec proc_LeaveShow @empid=201, @date=2068,@month=2,@date_type=1
+-- exec proc_LeaveShow @empid=0, @year=2021,@month=07,@date_type=0
+
+alter         proc [dbo].[proc_LeaveShow]
+
+@empid as int, @year as int,@month as int,@date_type as int
+
+as
+ declare @nepali_date as datetime
+ declare @start_date as datetime
+ declare @end_date as datetime
+begin
+
+       -- Print 'English Date'
+	declare @edate datetime
+	declare @sdate datetime
+if @empid = 0
+begin
+	--asdasdasd
+ if @date_type=0
+     begin
+	select @sdate=dateadd(yy,(@year-1900),0) + dateadd(mm,@month-1,0) + 0-1	
+
+	select @edate=DATEADD(mm,1,@sdate)
+	select @edate=DATEADD(dd,-1,@edate)
+	--print @edate
+	
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @sdate 
+	and @edate 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+
+
+
+
+
+
+
+
+
+/*	   select max(linfo.leave_name) 'Leave Name',max(convert(varchar,leave.leave_date,101)) as[English Date],
+         max(convert(varchar,leave.leave_date,101)) as [Taken Date],
+		 max(case leave.taken
+			when '1' then 'Full Leave'
+			when '2' then 'Half Leave'
+		 end) as Taken,
+
+		max(leave.remarks) as [Remarks],max(view_Emp_Info.emp_Fullname) as [Approved By]
+		from tbl_org_leave_log leave 
+		inner join tbl_org_leave_info linfo
+		on linfo.leave_id=leave.leave_id
+		inner join view_Emp_info on leave.ApprovedBy=View_Emp_Info.Emp_Id
+		where leave.emp_id=@empid and  cast(datepart(yy,leave.Leave_date)as int)=@date and cast(datepart(mm,leave_date)as int)=@month
+         group by leave.leave_date
+*/
+    end
+else
+  begin
+  
+     set @nepali_date =(SELECT * FROM fncNepaliToEnglishConversion(@year,@month,1))
+    -- print @nepali_date     
+    set @start_date=(select startday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @start_date
+    set @end_date=(select endday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @end_date
+    
+
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @start_date 
+	and @end_date 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+ 
+      
+     
+  end
+end
+else
+begin
+
+ if @date_type=0
+     begin
+	select @sdate=dateadd(yy,(@year-1900),0) + dateadd(mm,@month-1,0) + 0-1	
+
+	select @edate=DATEADD(mm,1,@sdate)
+	select @edate=DATEADD(dd,-1,@edate)
+	--print @edate
+	
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where Tbl_Org_Leave_Log.Emp_ID = @empid and 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @sdate 
+	and @edate 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+
+
+
+
+
+
+
+
+
+/*	   select max(linfo.leave_name) 'Leave Name',max(convert(varchar,leave.leave_date,101)) as[English Date],
+         max(convert(varchar,leave.leave_date,101)) as [Taken Date],
+		 max(case leave.taken
+			when '1' then 'Full Leave'
+			when '2' then 'Half Leave'
+		 end) as Taken,
+
+		max(leave.remarks) as [Remarks],max(view_Emp_Info.emp_Fullname) as [Approved By]
+		from tbl_org_leave_log leave 
+		inner join tbl_org_leave_info linfo
+		on linfo.leave_id=leave.leave_id
+		inner join view_Emp_info on leave.ApprovedBy=View_Emp_Info.Emp_Id
+		where leave.emp_id=@empid and  cast(datepart(yy,leave.Leave_date)as int)=@date and cast(datepart(mm,leave_date)as int)=@month
+         group by leave.leave_date
+*/
+    end
+else
+  begin
+  
+     set @nepali_date =(SELECT * FROM fncNepaliToEnglishConversion(@year,@month,1))
+    -- print @nepali_date     
+    set @start_date=(select startday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @start_date
+    set @end_date=(select endday from fncEnglishToNepaliConversion(@nepali_date))
+    --print @end_date
+    
+
+	SELECT Tbl_Org_Leave_Log.*, isnull(Tbl_Org_Leave_Info.LEAVE_NAME,'Negative Leave') 
+	as [Leave Name],Tbl_Emp_Info.emp_firstname + ' ' + Tbl_Emp_Info.emp_middlename + ' ' + 
+	Tbl_Emp_Info.emp_lastname + ' (' + cast(Tbl_Emp_Info.emp_id as varchar) + ')' as [Approved By], 
+	Tbl_Org_Leave_Log.Leave_Date as [English Date],(select dbo.fncEngToNep(Tbl_Org_Leave_Log.Leave_Date)) as [Nepali Date] 
+	FROM 
+	(Tbl_Org_Leave_Log LEFT OUTER JOIN Tbl_Org_Leave_Info ON 
+	Tbl_Org_Leave_Log.LEAVE_ID = Tbl_Org_Leave_Info.LEAVE_ID)
+	 inner join Tbl_Emp_Info on 
+	Tbl_Org_Leave_Log.approvedby=Tbl_Emp_Info.emp_id 
+	Where Tbl_Org_Leave_Log.Emp_ID = @empid and 
+	taken>0 AND Tbl_Org_Leave_Log.Leave_Date Between @start_date 
+	and @end_date 
+	ORDER BY Tbl_Org_Leave_Log.Leave_Date desc,
+	Tbl_Org_Leave_Log.Leave_Id
+
+ 
+      
+     
+  end
+end
+end
+
+
+
+-- select *from tbl_org_leave_log where emp_id=201 and Leave_date between '2011-04-14' and '2011-05-14' 
+
+
+
+
+
+#################################################################
