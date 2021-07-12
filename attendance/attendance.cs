@@ -1283,7 +1283,7 @@ namespace attendance
 
         public DataTable getBranch()
         {
-            string sql = "Select BRANCH_ID, BRANCH_NAME, BRANCH_CODE, ISOUTBRANCH, status from tbl_comp_branch";
+            string sql = "Select BRANCH_ID, BRANCH_NAME, BRANCH_CODE, ISOUTBRANCH, sta as status from tbl_comp_branch";
             con.Open();
             SqlCommand cmd = new SqlCommand(sql, con);
             SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -2214,7 +2214,7 @@ namespace attendance
             try
             {
 
-                string sql = "select * from view_emp_promotion_details  where  IsCurrent=1";
+                string sql = "select * from view_emp_promotion_details order by TDATE desc";
                 con.Open();
                 SqlCommand cmd = new SqlCommand(sql, con);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);
@@ -2228,6 +2228,40 @@ namespace attendance
             {
                 throw ex;
             }
+        }
+
+        public int insertPromotion(string EMP_ID, DateTime date, string PromotionalTitle, int FNC_ID, int DEG_ID, int Iscurrent, int P_FNC_ID, int P_DEG_ID, int Old_Salary, int New_Salary)
+        {
+            con.Open();
+            string sql = "INSERT INTO Tbl_Emp_Promotion_Detail (Emp_id, TDate, Promotion_title, IsCurrent, desg_id, P_Deg_Id) VALUES (@EMP_ID, @date, @PromotionalTitle, @Iscurrent, @DEG_ID, @P_DEG_ID)";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@EMP_ID", EMP_ID);
+            cmd.Parameters.AddWithValue("@date", date);
+            cmd.Parameters.AddWithValue("@PromotionalTitle", PromotionalTitle);
+            cmd.Parameters.AddWithValue("@FNC_ID", FNC_ID);
+            cmd.Parameters.AddWithValue("@DEG_ID", DEG_ID);
+            cmd.Parameters.AddWithValue("@Iscurrent", Iscurrent);
+            cmd.Parameters.AddWithValue("@P_FNC_ID", P_FNC_ID);
+            cmd.Parameters.AddWithValue("P_DEG_ID", P_DEG_ID);
+            cmd.Parameters.AddWithValue("@Old_Salary", Old_Salary);
+            cmd.Parameters.AddWithValue("@New_Salary", New_Salary);
+            int i = cmd.ExecuteNonQuery();
+            con.Close();
+            return i;
+
+        }
+
+        public int updateDesignation(string EMP_ID, int P_DEG_ID)
+        {
+            con.Open();
+            string sql = "UPDATE Tbl_emp_off_info SET DEG_ID = @P_DEG_ID WHERE Emp_id = @EMP_ID";
+            SqlCommand cmd = new SqlCommand(sql, con);
+            cmd.Parameters.AddWithValue("@EMP_ID", EMP_ID);
+            cmd.Parameters.AddWithValue("P_DEG_ID", P_DEG_ID);
+            int i = cmd.ExecuteNonQuery();
+            con.Close();
+            return i;
+
         }
 
         public int EmployeePromotion(string EMP_ID, DateTime date, string PromotionalTitle, int FNC_ID, int DEG_ID, int Iscurrent, int P_FNC_ID, int P_DEG_ID, int Old_Salary, int New_Salary)
@@ -2261,7 +2295,7 @@ namespace attendance
         {
             try
             {
-                string sql = "select * from view_emp_transfer_details where isCurrent = 1";
+                string sql = "select * from view_emp_transfer_details order by TDATE desc";
                 con.Open();
                 SqlCommand cmd = new SqlCommand(sql, con);
                 SqlDataAdapter da = new SqlDataAdapter(cmd);

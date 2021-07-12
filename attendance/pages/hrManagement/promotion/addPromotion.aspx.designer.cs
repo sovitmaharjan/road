@@ -121,24 +121,6 @@ namespace attendance.pages.hrManagement.promotion {
         protected global::System.Web.UI.WebControls.TextBox TxtDegid;
         
         /// <summary>
-        /// TxtOldSalary control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtOldSalary;
-        
-        /// <summary>
-        /// CmbBranch control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList CmbBranch;
-        
-        /// <summary>
         /// CmbDesignation control.
         /// </summary>
         /// <remarks>
@@ -155,15 +137,6 @@ namespace attendance.pages.hrManagement.promotion {
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtnewdegid;
-        
-        /// <summary>
-        /// TxtNewSalary control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtNewSalary;
         
         /// <summary>
         /// chkPromotion control.

@@ -11,23 +11,23 @@ namespace attendance.pages.hrManagement.promotion {
         attendance blu = new attendance();
         protected void Page_Load(object sender, EventArgs e) {
             if (!IsPostBack) {
-                loadBranch();
+                //loadBranch();
                 loadDesignation();
 
             }
-            CmbBranch.Items[0].Attributes["disabled"] = "disabled";
+            //CmbBranch.Items[0].Attributes["disabled"] = "disabled";
             CmbDesignation.Items[0].Attributes["disabled"] = "disabled";
         }
 
-        public void loadBranch() {
-            DataTable dt = blu.getBranch();
-            CmbBranch.DataSource = dt;
-            CmbBranch.DataTextField = "BRANCH_Name";
-            CmbBranch.DataValueField = "BRANCH_ID";
-            CmbBranch.DataBind();
-            //CmbBranch.Items.Insert(0, "Select Branch");
-            CmbBranch.Items[0].Attributes["disabled"] = "disabled";
-        }
+        //public void loadBranch() {
+        //    DataTable dt = blu.getBranch();
+        //    CmbBranch.DataSource = dt;
+        //    CmbBranch.DataTextField = "BRANCH_Name";
+        //    CmbBranch.DataValueField = "BRANCH_ID";
+        //    CmbBranch.DataBind();
+        //    //CmbBranch.Items.Insert(0, "Select Branch");
+        //    CmbBranch.Items[0].Attributes["disabled"] = "disabled";
+        //}
 
         public void loadDesignation() {
             DataTable dt = blu.getDesignationList();
@@ -40,12 +40,12 @@ namespace attendance.pages.hrManagement.promotion {
 
         }
 
-        protected void CmbBranch_SelectedIndexChanged(object sender, EventArgs e) {
-            string projectname = (CmbBranch.SelectedItem).ToString();
-            int projectid = int.Parse(CmbBranch.SelectedValue);
+        //protected void CmbBranch_SelectedIndexChanged(object sender, EventArgs e) {
+        //    string projectname = (CmbBranch.SelectedItem).ToString();
+        //    int projectid = int.Parse(CmbBranch.SelectedValue);
 
-            CmbBranch.Items[0].Attributes["disabled"] = "disabled";
-        }
+        //    CmbBranch.Items[0].Attributes["disabled"] = "disabled";
+        //}
 
         protected void TxtEmpId_TextChanged(object sender, EventArgs e) {
             int emp_id = int.Parse(TxtEmpId.Text);
@@ -57,7 +57,7 @@ namespace attendance.pages.hrManagement.promotion {
                 TxtBranchid.Text = dt.Rows[0]["BRANCH_ID"].ToString();
                 TxtDesignation.Text = dt.Rows[0]["DEG_NAME"].ToString();
                 TxtDegid.Text = dt.Rows[0]["DEG_ID"].ToString();
-                TxtOldSalary.Text = dt.Rows[0]["BSALARY"].ToString();
+                //TxtOldSalary.Text = dt.Rows[0]["BSALARY"].ToString();
 
                 DateTime result = Convert.ToDateTime(dt.Rows[0]["EMP_JOINDATE"].ToString());
                 TxtStartDate.Text = result.ToString("yyyy-MM-dd");
@@ -80,11 +80,11 @@ namespace attendance.pages.hrManagement.promotion {
 
             int old_branchid = Convert.ToInt32(TxtBranchid.Text);
             int old_desgid = Convert.ToInt32(TxtDegid.Text);
-            int old_salary = Convert.ToInt32(TxtOldSalary.Text);
+            //int old_salary = Convert.ToInt32(TxtOldSalary.Text);
 
-            int new_branchid = Convert.ToInt32(CmbBranch.SelectedValue.ToString());
+            //int new_branchid = Convert.ToInt32(CmbBranch.SelectedValue.ToString());
             int new_desgid = Convert.ToInt32(CmbDesignation.SelectedValue.ToString());
-            int new_salary = Convert.ToInt32(TxtNewSalary.Text);
+            //int new_salary = Convert.ToInt32(TxtNewSalary.Text);
 
             string description = txtDescription.Text;
             string PromotionalTitle = txtDescription.Text;
@@ -94,9 +94,15 @@ namespace attendance.pages.hrManagement.promotion {
                 Iscurrent = 0;
             }
 
-            int j = blu.EmployeePromotion(emp_id, date, description, 1, old_desgid, Iscurrent, 1, new_desgid, old_salary, new_salary);
-            if (j > 0) {
-                ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "swal('Done. !!!','Promotion saved Successfully','success').then((value) => { window.location ='promotionList'; });", true);
+            int j = blu.insertPromotion(emp_id, date, description, 1, old_desgid, Iscurrent, 1, new_desgid, 0, 0);
+            if (j > 0)
+            {
+                j = 0;
+                j = blu.updateDesignation(emp_id, new_desgid);
+                if (j > 0)
+                {
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "swal('Done. !!!','Promotion saved Successfully','success').then((value) => { window.location ='promotionList'; });", true);
+                }
             } else {
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "alert", "swal('Oops. !!!','Promotion Not saved, Try Again','warning').then((value) => { window.location ='promotionList'; });", true);
             }

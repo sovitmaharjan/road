@@ -103,23 +103,23 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <%--<div class="form-group">
                                 <asp:Label CssClass="control-label col-md-4" runat="server">Old Salary </asp:Label>
                                 <div class="col-md-6">
                                     <asp:TextBox ID="TxtOldSalary" CssClass="form-control" runat="server" ReadOnly="true"></asp:TextBox>
                                 </div>
-                            </div>
+                            </div>--%>
                         </div>
 
                         <div class="col-md-6 well">
                             <h4>
                                 <asp:Label CssClass="control-label" runat="server">Promoted To </asp:Label></h4>
-                            <div class="form-group">
+                            <%--<div class="form-group">
                                 <asp:Label CssClass="control-label col-md-4" runat="server">Branch </asp:Label>
                                 <div class="col-md-6">
                                     <asp:DropDownList ID="CmbBranch" CssClass="form-control" AutoPostBack="true" runat="server" CausesValidation="True" ToolTip="Branch List" EnableLoadOnDemand="true" EnableVirtualScrolling="true" AutoValidate="true" AllowCustomText="true" InitialValue="Unselectable Item" OnSelectedIndexChanged="CmbBranch_SelectedIndexChanged"></asp:DropDownList>
                                 </div>
-                            </div>
+                            </div>--%>
 
                             <div class="form-group">
                                 <asp:Label CssClass="control-label col-md-4" runat="server"> Designation </asp:Label>
@@ -131,12 +131,12 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
+                            <%--<div class="form-group">
                                 <asp:Label CssClass="control-label col-md-4" runat="server">New Salary </asp:Label>
                                 <div class="col-md-6">
                                     <asp:TextBox ID="TxtNewSalary" CssClass="form-control" Type="number" runat="server"></asp:TextBox>
                                 </div>
-                            </div>
+                            </div>--%>
 
                         </div>
                     </ContentTemplate>
@@ -155,8 +155,8 @@
                 </div>
                 <div class="col-md-8 col-md-offset-4">
                     <div class="col-md-3">
-                        <%--<asp:Button ID="BtnSave" CssClass="btn btn-success col-md-12" runat="server" Text="Save" OnClick="BtnSave_Click" />--%>
-                        <asp:Button ID="Button1" CssClass="btn btn-success col-md-12" runat="server" Text="Save" />
+                        <asp:Button ID="BtnSave" CssClass="btn btn-success col-md-12" runat="server" Text="Save" OnClick="BtnSave_Click" />
+                        <%--<asp:Button ID="Button1" CssClass="btn btn-success col-md-12" runat="server" Text="Save" />--%>
                     </div>
 
                     <div class="col-md-3">

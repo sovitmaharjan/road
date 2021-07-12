@@ -22,7 +22,7 @@ namespace attendance.pages.hrManagement.transfer {
 
         protected void GridView1_SelectedIndexChanged(object sender, EventArgs e) {
             GridViewRow gr = GridView1.SelectedRow;
-            Response.Redirect("transferDetails?Emp_id=" + gr.Cells[7].Text);
+            Response.Redirect("transferDetails?Emp_id=" + gr.Cells[5].Text);
         }
         protected void GridView1_RowDataBound(object sender, GridViewRowEventArgs e) {
             //e.Row.Cells[7].Visible = false;

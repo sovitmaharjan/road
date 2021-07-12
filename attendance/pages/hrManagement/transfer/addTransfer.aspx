@@ -120,8 +120,8 @@
                 </div>
                 <div class="col-md-8 col-md-offset-4">
                     <div class="col-md-3">
-                        <%--<asp:Button ID="BtnSave" CssClass="btn btn-success col-md-12" runat="server" Text="Save" OnClick="BtnSave_Click" />--%>
-                        <asp:Button ID="Button1" CssClass="btn btn-success col-md-12" runat="server" Text="Save" />
+                        <asp:Button ID="BtnSave" CssClass="btn btn-success col-md-12" runat="server" Text="Save" OnClick="BtnSave_Click" />
+                        <%--<asp:Button ID="Button1" CssClass="btn btn-success col-md-12" runat="server" Text="Save" />--%>
                     </div>
 
                     <div class="col-md-3">

@@ -199,20 +199,16 @@ attendance management
 
 
 menu
-1	Dashboard	Dashboard	mdi mdi-view-dashboard	1	0	1
-2	System Setup	NULL	mdi mdi-settings	2	1	1
-3	HR Management	NULL	mdi mdi-account-key	3	1	1
-4	Attendance Mgmt	NULL	mdi mdi-clock	4	1	1
-5	Outstation	outstationList	mdi mdi-calendar	5	0	1
-6	Report	NULL	mdi mdi-format-list-bulleted	7	1	1
-7	Permission	permission	mdi mdi-gavel	8	0	1
-8	Over Time Mgmt	overTimeManagement	mdi mdi-timer	6	0	1
-9	Log History	logHistory	mdi mdi-history	9	0	1
-10	Delete		mdi mdi-delete-forever	10	1	1
-11	Backup Database	BackupDatabase	mdi mdi-harddisk	11	0	1
-12	Export To IDS	ExportToIDS	mdi mdi-cash	12	0	1
-13	Subsitute Cancellation	SubsituteCancellation	mdi mdi-window-close	13	1	1
-NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	Dashboard	Dashboard	mdi mdi-view-dashboard	1	0
+2	System Setup	NULL	mdi mdi-settings	2	1
+3	HR Management	NULL	mdi mdi-account-key	3	1
+4	Attendance Mgmt	NULL	mdi mdi-clock	4	1
+5	Outstation	outstationList	mdi mdi-calendar	5	0
+6	Report	NULL	mdi mdi-format-list-bulleted	7	1
+7	Permission	permission	mdi mdi-gavel	8	0
+8	Over Time Mgmt	overTimeManagement	mdi mdi-timer	6	0
+11	Backup Database	BackupDatabase	mdi mdi-harddisk	11	0
+NULL	NULL	NULL	NULL	NULL	NULL
 
 
 
@@ -234,9 +230,6 @@ submenu1
 14	Leave Application	LeaveApplication	NULL	0	4
 15	Leave Cancellation	LeaveCancellation	NULL	0	4
 16	Leave Assignment	LeaveAssignment	NULL	0	4
-17	Weekend Substitute	WeekendSubstitute	NULL	0	4
-18	Holiday Substitute	HolidaySubstitute	NULL	0	4
-19	Double Duty Substitute	DoubleDutySubstitute	NULL	0	4
 20	Attendance Report	NULL	NULL	1	6
 21	Leave Report	NULL	NULL	1	6
 22	Employee Info	NULL	NULL	1	6
@@ -244,14 +237,6 @@ submenu1
 24	Missing Punch	MissingPunch	NULL	0	6
 25	Other Report	NULL	NULL	1	6
 26	Log Activities	LogActivities	NULL	0	6
-27	Attendance	deleteAttendance	NULL	0	10
-28	Employee	deleteEmployee	NULL	0	10
-29	Leave	deleteLeave	NULL	0	10
-30	Leave Adjustment	LeaveAdjustment	NULL	0	4
-31	PH	SubsitutedPHCancellation	NULL	0	13
-32	Weekend	SubsitutedWeekendCancellation	NULL	0	13
-33	DD	SubsitutedDDCancellation	NULL	0	13
-34	Assigned PH	DeleteAssignedPH	NULL	0	10
 35	Sub Leave Lapse	SubsituteLeaveLapse	NULL	0	6
 36	Hod Assign	HODAssign	NULL	0	2
 NULL	NULL	NULL	NULL	NULL	NULL

@@ -47,10 +47,10 @@
 
                                     <asp:BoundField DataField="branch_name_from" HeaderText="Previous Project" />
                                     <asp:BoundField DataField="branch_name_to" HeaderText="Current Project" />
-                                    <asp:BoundField DataField="District_From" HeaderText="Previous District" />
-                                    <asp:BoundField DataField="District_To" HeaderText="Current District" />
-                                    <asp:BoundField DataField="Emp_id" HeaderText="ID" />
-                                    <asp:CommandField ShowSelectButton="True" ButtonType="Button" SelectText="View" ControlStyle-CssClass="btn btn-primary" HeaderText="Action" />
+                                    <%--<asp:BoundField DataField="District_From" HeaderText="Previous District" />--%>
+                                    <%--<asp:BoundField DataField="District_To" HeaderText="Current District" />--%>
+                                    <%--<asp:BoundField DataField="Emp_id" HeaderText="ID" />--%>
+                                    <%--<asp:CommandField ShowSelectButton="True" ButtonType="Button" SelectText="View" ControlStyle-CssClass="btn btn-primary" HeaderText="Action" />--%>
                                 </Columns>
                                 <EditRowStyle BackColor="#2461BF" />
                                 <FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" />

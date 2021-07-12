@@ -31,7 +31,7 @@ namespace attendance.pages.hrManagement.transfer {
             CmbBranch.DataTextField = "BRANCH_Name";
             CmbBranch.DataValueField = "BRANCH_ID";
             CmbBranch.DataBind();
-            //CmbBranch.Items.Insert(0, "Select Branch");
+            CmbBranch.Items.Insert(0, "Select Branch");
         }
 
         //public void loadDepartment()

@@ -49,8 +49,8 @@
                                     </asp:TemplateField>
                                     <asp:BoundField DataField="Expr2" HeaderText="Previous Designation" />
                                     <asp:BoundField DataField="DEG_NAME" HeaderText=" Current Designation" />
-                                    <asp:BoundField DataField="Emp_Id" HeaderText="Id" />
-                                    <asp:CommandField ShowSelectButton="True" ButtonType="Button" SelectText="View" ControlStyle-CssClass="btn btn-primary" HeaderText="Action" />
+                                    <%--<asp:BoundField DataField="Emp_Id" HeaderText="Id" />--%>
+                                    <%--<asp:CommandField ShowSelectButton="True" ButtonType="Button" SelectText="View" ControlStyle-CssClass="btn btn-primary" HeaderText="Action" />--%>
                                 </Columns>
                                 <EditRowStyle BackColor="#2461BF" />
                                 <FooterStyle BackColor="#507CD1" Font-Bold="True" ForeColor="White" />

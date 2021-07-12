@@ -74,7 +74,7 @@ namespace attendance.pages.attendanceManagement.leaveAssignment
 
         public void loadHOD()
         {
-            DataTable dt = blu.getHODList();
+            DataTable dt = blu.getHODList2();
             CmbApproved.DataSource = dt;
             CmbApproved.DataTextField = "emp_Fullname";
             CmbApproved.DataValueField = "EMP_ID";
