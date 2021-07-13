@@ -13,147 +13,111 @@ namespace attendance.pages.outstation {
     public partial class outstation {
         
         /// <summary>
-        /// TxtId control.
+        /// pageNamePlace1 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtId;
+        protected global::System.Web.UI.WebControls.Literal pageNamePlace1;
         
         /// <summary>
-        /// TxtStartDate control.
+        /// pageNamePlace2 control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtStartDate;
+        protected global::System.Web.UI.WebControls.Literal pageNamePlace2;
         
         /// <summary>
-        /// TxtNepaliDate control.
+        /// tableBody control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtNepaliDate;
+        protected global::System.Web.UI.WebControls.Literal tableBody;
         
         /// <summary>
-        /// TxtEndDate control.
+        /// form control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtEndDate;
+        protected global::System.Web.UI.HtmlControls.HtmlForm form;
         
         /// <summary>
-        /// nepaliDate2 control.
+        /// id control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox nepaliDate2;
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden id;
         
         /// <summary>
-        /// scrManager control.
+        /// employee control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.ScriptManager scrManager;
+        protected global::System.Web.UI.WebControls.DropDownList employee;
         
         /// <summary>
-        /// upPnl control.
+        /// startDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.UpdatePanel upPnl;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText startDate;
         
         /// <summary>
-        /// DDLEmployee control.
+        /// startNepaliDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDLEmployee;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText startNepaliDate;
         
         /// <summary>
-        /// TxtEmpId control.
+        /// endDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtEmpId;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText endDate;
         
         /// <summary>
-        /// TxtStation control.
+        /// endNepaliDate control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TxtStation;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText endNepaliDate;
         
         /// <summary>
-        /// txtDescription control.
+        /// statusYes control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtDescription;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusYes;
         
         /// <summary>
-        /// DDLApprover control.
+        /// statusNo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList DDLApprover;
-        
-        /// <summary>
-        /// rbsta control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButton rbsta;
-        
-        /// <summary>
-        /// rbsta1 control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButton rbsta1;
-        
-        /// <summary>
-        /// BtnSave control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button BtnSave;
-        
-        /// <summary>
-        /// BtnCancel control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button BtnCancel;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusNo;
     }
 }
