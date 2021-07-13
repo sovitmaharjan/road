@@ -1304,6 +1304,7 @@
     <Content Include="pages\systemSetup\department\DepartmentList.aspx" />
     <Content Include="pages\systemSetup\department\departmentLiswt.aspx" />
     <Content Include="pages\systemSetup\department\EditDepartment.aspx" />
+    <Content Include="pages\systemSetup\department\section.aspx" />
     <Content Include="pages\systemSetup\designation\designation.aspx" />
     <Content Include="pages\systemSetup\designation\designationList.aspx" />
     <Content Include="pages\systemSetup\grade\grade.aspx" />
@@ -2124,6 +2125,13 @@
     </Compile>
     <Compile Include="pages\systemSetup\department\EditDepartment.aspx.designer.cs">
       <DependentUpon>EditDepartment.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="pages\systemSetup\department\section.aspx.cs">
+      <DependentUpon>section.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="pages\systemSetup\department\section.aspx.designer.cs">
+      <DependentUpon>section.aspx</DependentUpon>
     </Compile>
     <Compile Include="pages\systemSetup\designation\designation.aspx.cs">
       <DependentUpon>designation.aspx</DependentUpon>

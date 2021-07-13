@@ -501,6 +501,41 @@ namespace attendance
             queryFunction(query);
         }
 
+        public int manageLeave2(
+
+            string leaveName,
+            int leaveType,
+            int daysAnually,
+            int maxAccumulationDays,
+            int monthlyEarning,
+            int maxDaysAtATime,
+            int cashable,
+            int mustExhaustAllLeaves,
+            int id,
+            int status
+        )
+        {
+
+            string sql = "insert into Tbl_Org (Org_Name,Org_Address,Org_Address2,Org_Phone,Org_Fax,Org_Email,Org_Website) values(@Org_Name,@Org_Address,@Org_Address2, @Org_Phone,@Org_Fax,@Org_Email,@Org_Website)";
+                SqlCommand cmd = new SqlCommand(sql, con);
+                cmd.Parameters.AddWithValue("@leaveName", leaveName);
+                cmd.Parameters.AddWithValue("@leaveType", leaveType);
+                cmd.Parameters.AddWithValue("@daysAnually", daysAnually);
+                cmd.Parameters.AddWithValue("@maxAccumulationDays", maxAccumulationDays);
+                cmd.Parameters.AddWithValue("@monthlyEarning", monthlyEarning);
+                cmd.Parameters.AddWithValue("@maxDaysAtATime", maxDaysAtATime);
+                cmd.Parameters.AddWithValue("@cashable", cashable);
+                cmd.Parameters.AddWithValue("@mustExhaustAllLeaves", mustExhaustAllLeaves);
+                cmd.Parameters.AddWithValue("@id", id);
+                cmd.Parameters.AddWithValue("@status", status);
+
+                con.Open();
+                int i = cmd.ExecuteNonQuery();
+                con.Close();
+                return i;
+        }
+
+
         //==========================holiday==========================
         public DataTable holiday(int id)
         {
@@ -3982,5 +4017,177 @@ namespace attendance
 
             return queryFunction(query);
         }
+
+        public DataTable getTableData(List<string> field, string table, Dictionary<string, object> condition)
+        {
+            string fieldData = "";
+            string conditionData = "";
+            string query;
+
+            if (field.Count == 1)
+            {
+                fieldData = field[0];
+            }
+            else
+            {
+                for (int i = 0; i < field.Count; i++)
+                {
+                    if (fieldData == "")
+                    {
+                        fieldData = field[i];
+                    }
+                    else
+                    {
+                        fieldData += " , " + field[i];
+                    }
+                }
+            }
+            if (condition.Count == 0)
+            {
+                query = "select " + fieldData + " from " + table;
+            }
+            else
+            {
+                if (condition.Count == 1)
+                {
+                    foreach (KeyValuePair<string, object> value in condition)
+                    {
+                        conditionData = value.Key + " = '" + value.Value + "' ";
+                    }
+                }
+                else
+                {
+                    foreach (KeyValuePair<string, object> value in condition)
+                    {
+                        if (conditionData == "")
+                        {
+                            conditionData = value.Key + " = '" + value.Value + "' ";
+                        }
+                        else
+                        {
+                            conditionData += " and " + value.Key + " = '" + value.Value + "' ";
+                        }
+                    }
+                }
+                query = "select " + fieldData + " from " + table + " where " + conditionData;
+            }
+            return queryFunction(query);
+        }
+
+        public int insertTableData(string table, Dictionary<string, object> data)
+        {
+            string query;
+            string column = "";
+            string columnValue = "";
+
+            if (data.Count == 1)
+            {
+                foreach (KeyValuePair<string, object> value in data)
+                {
+                    column = value.Key;
+                    columnValue = "@" + value.Key;
+                }
+            }
+            else if (data.Count > 1)
+            {
+                foreach (KeyValuePair<string, object> value in data)
+                {
+                    if (column == "")
+                    {
+                        column = value.Key;
+                    }
+                    else
+                    {
+                        column += " , " + value.Key;
+                    }
+                    if (columnValue == "")
+                    {
+                        columnValue = "@" + value.Key;
+                    }
+                    else
+                    {
+                        columnValue += " , @" + value.Key;
+                    }
+                }
+            }
+            query = "INSERT INTO " + table + " ( " + column + " ) VALUES ( " + columnValue + " )";
+            SqlCommand command = new SqlCommand(query, connection);
+            foreach (KeyValuePair<string, object> value in data)
+            {
+                command.Parameters.AddWithValue("@" + value.Key, value.Value);
+            }
+            connection.Open();
+            int i = command.ExecuteNonQuery();
+            connection.Close();
+            return i;
+        }
+
+        public int updateTableData(string table, Dictionary<string, object> data, Dictionary<string, object> condition)
+        {
+            string updateData = "";
+            string conditionData = "";
+            string query;
+
+            if (data.Count == 1)
+            {
+                foreach (KeyValuePair<string, object> value in data)
+                {
+                    updateData = value.Key + " = @" + value.Key;
+                }
+            }
+            else if (data.Count > 1)
+            {
+                foreach (KeyValuePair<string, object> value in data)
+                {
+                    if (updateData == "")
+                    {
+                        updateData = value.Key + " = @" + value.Key;
+                    }
+                    else
+                    {
+                        updateData += " , " + value.Key + " = @" + value.Key;
+                    }
+                }
+            }
+
+            if (condition.Count == 1)
+            {
+                foreach (KeyValuePair<string, object> value in condition)
+                {
+                    conditionData = value.Key + " = @" + value.Key;
+                }
+            }
+            else if (condition.Count > 1)
+            {
+                foreach (KeyValuePair<string, object> value in condition)
+                {
+                    if (conditionData == "")
+                    {
+                        conditionData = value.Key + " = @" + value.Key;
+                    }
+                    else
+                    {
+                        conditionData += " and " + value.Key + " = @" + value.Key;
+                    }
+                }
+            }
+
+            query = "UPDATE " + table + " SET " + updateData + " WHERE " + conditionData;
+            SqlCommand command = new SqlCommand(query, connection);
+            foreach (KeyValuePair<string, object> value in data)
+            {
+                command.Parameters.AddWithValue("@" + value.Key, value.Value);
+            }
+            foreach (KeyValuePair<string, object> value in condition)
+            {
+                command.Parameters.AddWithValue("@" + value.Key, value.Value);
+            }
+            connection.Open();
+            int i = command.ExecuteNonQuery();
+            connection.Close();
+            return i;
+        }
+
+
     }
 }

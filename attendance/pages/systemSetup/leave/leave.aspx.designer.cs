@@ -31,130 +31,157 @@ namespace attendance.pages.systemSetup.leave {
         protected global::System.Web.UI.WebControls.Literal pageNamePlace2;
         
         /// <summary>
-        /// leaveNameForm control.
+        /// tableBody control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText leaveNameForm;
+        protected global::System.Web.UI.WebControls.Literal tableBody;
         
         /// <summary>
-        /// expireYearlyForm control.
+        /// form control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton expireYearlyForm;
+        protected global::System.Web.UI.HtmlControls.HtmlForm form;
         
         /// <summary>
-        /// accumulativeForm control.
+        /// id control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton accumulativeForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputHidden id;
         
         /// <summary>
-        /// servicePeriodForm control.
+        /// leaveName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton servicePeriodForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText leaveName;
         
         /// <summary>
-        /// cashableYesForm control.
+        /// expireYearly control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton cashableYesForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton expireYearly;
         
         /// <summary>
-        /// cashableNoForm control.
+        /// accumulative control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton cashableNoForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton accumulative;
         
         /// <summary>
-        /// daysAnuallyForm control.
+        /// servicePeriod control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText daysAnuallyForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton servicePeriod;
         
         /// <summary>
-        /// maxDaysAtATimeForm control.
+        /// cashableYes control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText maxDaysAtATimeForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton cashableYes;
         
         /// <summary>
-        /// maxAccumulationDaysForm control.
+        /// cashableNo control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText maxAccumulationDaysForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton cashableNo;
         
         /// <summary>
-        /// entireServicePeriodForm control.
+        /// dayAnnually control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText entireServicePeriodForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText dayAnnually;
         
         /// <summary>
-        /// monthlyEarningForm control.
+        /// maxDaysAtTime control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox monthlyEarningForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText maxDaysAtTime;
         
         /// <summary>
-        /// mustExhaustAllLeavesForm control.
+        /// maxAccumulationDay control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox mustExhaustAllLeavesForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText maxAccumulationDay;
         
         /// <summary>
-        /// statusYesForm control.
+        /// servicePeriodInAYear control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusYesForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText servicePeriodInAYear;
         
         /// <summary>
-        /// statusNoForm control.
+        /// monthlyEarning control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusNoForm;
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton monthlyEarning;
+        
+        /// <summary>
+        /// mustExhaustAllTheLeave control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton mustExhaustAllTheLeave;
+        
+        /// <summary>
+        /// statusYes control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusYes;
+        
+        /// <summary>
+        /// statusNo control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.HtmlControls.HtmlInputRadioButton statusNo;
         
         /// <summary>
         /// saveButton control.

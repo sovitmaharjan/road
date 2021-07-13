@@ -1,4 +1,4 @@
-﻿<%@ Page Title="" Language="C#" MasterPageFile="~/attendanceMaster.Master" AutoEventWireup="true" CodeBehind="department.aspx.cs" Inherits="attendance.pages.systemSetup.department.department" %>
+﻿<%@ Page Title="" Language="C#" MasterPageFile="~/attendanceMaster.Master" AutoEventWireup="true" CodeBehind="section.aspx.cs" Inherits="attendance.pages.systemSetup.department.section" %>
 <asp:Content ID="Content1" ContentPlaceHolderID="content" runat="server">
     <div class="row">
         <div class="col-xs-12">
@@ -22,17 +22,11 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="card-box table-responsive">
-                <div class="form-group">
-                    <button type="button" id="add" class="btn btn-success w-xs waves-effect waves-light" data-toggle="modal" data-target="#addContent">
-                        <i class="mdi mdi-plus"></i> Add Content
-                    </button>
-                </div>
                 <table id="datatable" class="table table-striped  table-colored table-info">
                     <thead>
                         <tr>
                             <th>S. No.</th>
-                            <th>Department Parent</th>
-                            <th>Department Name</th>
+                            <th>Section Name</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
@@ -58,39 +52,15 @@
                         <input type="hidden" id="id" runat="server">
                         <div class="form-group row">
                             <label class="col-md-2 control-label">
-                                Department/Section<span class="text-danger">*</span>
+                                Section Name<span class="text-danger">*</span>
                             </label>
                             <div class="col-md-9">
-                                <input id="departmentSectionName" type="text" class="form-control" runat="server" autocomplete="off" required="required">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-md-2 control-label">
-                                Group Under
-                            </label>
-                            <div class="checkbox col-md-1">
-                                <input id="groupUnder" type="checkbox" runat="server">
-                                <label for="groupUnder"></label>
-                            </div>
-                            <div class="col-md-8 departmentDropDownList" hidden="hidden">
-                                <asp:DropDownList ID="departmentList" CssClass="form-control" runat="server"></asp:DropDownList>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-md-2 control-label">
-                                Create Default Section
-                            </label>
-                            <div class="checkbox col-md-1">
-                                <input id="createDefaultSection" type="checkbox" runat="server">
-                                <label for="createDefaultSection"></label>
-                            </div>
-                            <div class="col-md-8 sectionInput" hidden="hidden">
-                                <input id="section" type="text" class="form-control" runat="server" autocomplete="off" hidden="hidden">
+                                <input id="sectionName" type="text" class="form-control" runat="server" autocomplete="off" required="required">
                             </div>
                         </div>
                         <div class="form-group">
                             <label class="col-md-2 control-label">
-                                Status 
+                                Status
                                 <span class="text-danger">* </span>
                             </label>
                             <div class="col-md-9">
@@ -127,59 +97,35 @@
                     var id = $(this).attr('id');
                     $.ajax({
                         method: 'post',
-                        url: '<%=this.baseUrl%>systemSetup/department/department.aspx/getData',
+                        url: '<%=this.baseUrl%>systemSetup/department/section.aspx/getData',
                         data: '{ "id": ' + id + '}',
                         contentType: "application/json; charset=utf-8",
                         dataType: 'json',
                         success: function (result) {
                             result = result.d[0];
-                            $('#<%=id.ClientID%>').val(result['DEPT_NAME']);
-                            $('#<%=departmentSectionName.ClientID%>').val(result['DEPT_NAME']);
+                            $('#<%=id.ClientID%>').val(result['DEPT_ID']);
+                            $('#<%=sectionName.ClientID%>').val(result['DEPT_NAME']);
+                            if (result['sta'] == 1) {
+                                $('#<%=statusYes.ClientID%>').prop('checked', true);
+                                $('#<%=statusNo.ClientID%>').prop('checked', false);
+                            } else {
+                                $('#<%=statusNo.ClientID%>').prop('checked', true);
+                                $('#<%=statusYes.ClientID%>').prop('checked', false);
+                            }
                         }
                     })
                 })
             });
 
-            $('#<%=groupUnder.ClientID%>').on('click', function () {
-                if ($('#<%=groupUnder.ClientID%>').is(':checked')) {
-                    $('.departmentDropDownList').prop('hidden', false);
-                    $('#<%=createDefaultSection.ClientID%>').prop('disabled', true);
-                    $('#<%=groupUnder.ClientID%>').prop('required', true);
-                } else {
-                    $('.departmentDropDownList').prop('hidden', true);
-                    $('#<%=createDefaultSection.ClientID%>').prop('disabled', false);
-                    $('#<%=groupUnder.ClientID%>').prop('required', false);
-                }
-            })
-
-            $('#<%=createDefaultSection.ClientID%>').on('click', function () {
-                if ($('#<%=createDefaultSection.ClientID%>').is(':checked')) {
-                    $('.sectionInput').prop('hidden', false);
-                    $('#<%=groupUnder.ClientID%>').prop('disabled', true);
-                    $('#<%=section.ClientID%>').val($('#<%=departmentSectionName.ClientID%>').val() + ' sec');
-                    $('#<%=departmentSectionName.ClientID%>').on('keyup', function () {
-                        $('#<%=section.ClientID%>').val($('#<%=departmentSectionName.ClientID%>').val() + ' sec');
-                    })
-                    $('#<%=section.ClientID%>').prop('required', true);
-                } else {
-                    $('.sectionInput').prop('hidden', true);
-                    $('#<%=groupUnder.ClientID%>').prop('disabled', false);
-                    $('#<%=section.ClientID%>').val('');
-                    $('#<%=section.ClientID%>').prop('required', false);
-                }
-            })
-
             $('#add').on('click', function () {
                 $('#<%=id.ClientID%>').val('');
-                $('#<%=departmentSectionName.ClientID%>').val('');
-                $('#<%=departmentSectionName.ClientID%>').val('');
+                $('#<%=sectionName.ClientID%>').val('');
                 $('#<%=statusYes.ClientID%>').prop('checked', true);
                 $('#<%=statusNo.ClientID%>').prop('checked', false);
             })
 
             $('#clear').on('click', function () {
-                $('#<%=departmentSectionName.ClientID%>').val('');
-                $('#<%=departmentSectionName.ClientID%>').val('');
+                $('#<%=sectionName.ClientID%>').val('');
                 $('#<%=statusYes.ClientID%>').prop('checked', true);
                 $('#<%=statusNo.ClientID%>').prop('checked', false);
             })

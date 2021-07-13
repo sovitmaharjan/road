@@ -5,11 +5,13 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Data;
+using System.Web.Services;
 
 namespace attendance.pages.dashboard
 {
     public partial class dashboard : System.Web.UI.Page
     {
+        static attendance attendanceObject = new attendance();
 
         attendance blu = new attendance();
         DataTable dt;
@@ -226,6 +228,24 @@ namespace attendance.pages.dashboard
             }
 
             //********************************* Getting Probation *********************************
+        }
+
+        [WebMethod]
+        public static List<List<string>> pieChartData()
+        {
+            DataTable dtPieChartData = attendanceObject.queryFunction("EXECUTE Barchart_info B");
+            int count = dtPieChartData.Rows.Count;
+            List<string> name = new List<string>();
+            List<string> quantity = new List<string>();
+            foreach (DataRow value in dtPieChartData.Rows)
+            {
+                name.Add(value["branch_name"].ToString());
+                quantity.Add(value["totalemp"].ToString());
+            }
+            List<List<string>> data = new List<List<string>>();
+            data.Add(name);
+            data.Add(quantity);
+            return data;
         }
     }
 }

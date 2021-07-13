@@ -10,7 +10,7 @@
 namespace attendance.pages.systemSetup.department {
     
     
-    public partial class department {
+    public partial class section {
         
         /// <summary>
         /// pageNamePlace1 control.
@@ -58,49 +58,13 @@ namespace attendance.pages.systemSetup.department {
         protected global::System.Web.UI.HtmlControls.HtmlInputHidden id;
         
         /// <summary>
-        /// departmentSectionName control.
+        /// sectionName control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText departmentSectionName;
-        
-        /// <summary>
-        /// groupUnder control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox groupUnder;
-        
-        /// <summary>
-        /// departmentList control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList departmentList;
-        
-        /// <summary>
-        /// createDefaultSection control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputCheckBox createDefaultSection;
-        
-        /// <summary>
-        /// section control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlInputText section;
+        protected global::System.Web.UI.HtmlControls.HtmlInputText sectionName;
         
         /// <summary>
         /// statusYes control.
