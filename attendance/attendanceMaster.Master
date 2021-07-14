@@ -606,6 +606,30 @@
                     $('.englishDate2').val(BS2AD($('.nepaliDate2').val()));
                 }
             });
+
+            $('.englishDate3').change(function () {
+                var a = $('.englishDate3').val();
+                if (a != "") {
+                    $('.nepaliDate3').val(AD2BS($('.englishDate3').val()));
+                }
+            });
+
+            $('.englishDate3').datepicker({
+                format: 'yyyy-mm-dd',
+                autoclose: true,
+                showOnFocus: true,
+                todayHighlight: true
+            });
+
+            $('.nepaliDate3').nepaliDatePicker({
+                npdMonth: true,
+                npdYear: true,
+                npdYearCount: 10,
+                onChange: function () {
+                    var a = $('.nepaliDate3').val();
+                    $('.englishDate3').val(BS2AD($('.nepaliDate3').val()));
+                }
+            });
         })
         </script>
 

@@ -40,62 +40,63 @@ namespace attendance.pages.outstation {
                 employee.DataBind();
                 employee.Items.Insert(0, new ListItem("Select Employee", ""));
 
-                //string table = "Tbl_Comp_Branch";
-                //List<string> field = new List<string>();
-                //field.Add("*");
-                //Dictionary<string, object> condition = new Dictionary<string, object>();
-                //DataTable dtTableData = attendanceObject.getTableData(field, table, condition);
-                //string tableBodyRow = "";
-                //int i = 1;
-                //foreach (DataRow value in dtTableData.Rows)
-                //{
-                //    tableBodyRow += "<tr>";
-                //    tableBodyRow += "<td>" + i + "</td>";
-                //    tableBodyRow += "<td>" + value["BRANCH_CODE"] + "</td>";
-                //    tableBodyRow += "<td>" + value["BRANCH_NAME"] + "</td>";
-                //    if (Convert.ToInt32(value["sta"]) == 0)
-                //    {
-                //        tableBodyRow += "<td>Inactive</td>";
-                //    }
-                //    else
-                //    {
-                //        tableBodyRow += "<td>Active</td>";
-                //    }
-                //    tableBodyRow += "<td><div class='button-list'><button type='button' id='" + value["BRANCH_ID"] + "' class='btn btn-warning w-xs waves-effect waves-light btn-xs edit' data-toggle='modal' data-target='#addContent'><i class='mdi mdi-pencil'></i> Edit</button></div></td>";
-                //    tableBodyRow += "</tr>";
-                //    i++;
-                //}
-                //tableBody.Text = tableBodyRow;
+                DataTable dtTableData = attendanceObject.queryFunction("select * from Tbl_Emp_Outstation join view_Emp_Info on Tbl_Emp_Outstation.EMP_ID = view_Emp_Info.EMP_ID");
+                string tableBodyRow = "";
+                foreach (DataRow value in dtTableData.Rows)
+                {
+                    tableBodyRow += "<tr>";
+                    tableBodyRow += "<td>" + value["EMP_ID"] + "</td>";
+                    tableBodyRow += "<td>" + value["emp_Fullname"] + "</td>";
+                    tableBodyRow += "<td>" + value["DEPT_NAME"] + "</td>";
+                    tableBodyRow += "<td>" + value["DEG_NAME"] + "</td>";
+                    tableBodyRow += "<td>" + value["STATION"] + "</td>";
+                    tableBodyRow += "<td>" + Convert.ToDateTime(value["SDATE"]).ToString("yyyy-MM-dd") + "</td>";
+                    tableBodyRow += "<td>" + Convert.ToDateTime(value["EDATE"]).ToString("yyyy-MM-dd") + "</td>";
+                    if (Convert.ToInt32(value["status"]) == 0)
+                    {
+                        tableBodyRow += "<td>Inactive</td>";
+                    }
+                    else
+                    {
+                        tableBodyRow += "<td>Active</td>";
+                    }
+                    tableBodyRow += "</tr>";
+                }
+                tableBody.Text = tableBodyRow;
             }
         }
 
-        //protected void saveClick(object sender, EventArgs e)
-        //{
-        //    string table = "Tbl_Comp_Branch";
-        //    Dictionary<string, object> data = new Dictionary<string, object>();
-        //    data.Add("BRANCH_NAME", branchName.Value);
-        //    data.Add("BRANCH_CODE", branchCode.Value);
-        //    if (statusYes.Checked)
-        //    {
-        //        data.Add("sta", "1");
-        //    }
-        //    if (statusNo.Checked)
-        //    {
-        //        data.Add("sta", "0");
-        //    }
-        //    if (string.IsNullOrEmpty(id.Value))
-        //    {
-        //        data.Add("BRANCH_ID", Convert.ToInt32(attendanceObject.queryFunction("select max(BRANCH_ID)+1 from Tbl_Comp_Branch").Rows[0][0]));
-        //        attendanceObject.insertTableData(table, data);
-        //    }
-        //    else
-        //    {
-        //        Dictionary<string, object> condition = new Dictionary<string, object>();
-        //        condition.Add("BRANCH_ID", id.Value);
-        //        attendanceObject.updateTableData(table, data, condition);
-        //    }
-        //    Response.Redirect(baseUrl + "branch");
-        //}
+        protected void saveClick(object sender, EventArgs e)
+        {
+            string table = "Tbl_Emp_Outstation";
+            Dictionary<string, object> data = new Dictionary<string, object>();
+            data.Add("EMP_ID", employee.SelectedValue);
+            data.Add("TDATE", date.Value);
+            data.Add("STATION", location.Value);
+            data.Add("SDATE", startDate.Value);
+            data.Add("EDATE", endDate.Value);
+            data.Add("DAYS", days.Value);
+            data.Add("PURPOSE", description.Value);
+            if (statusYes.Checked)
+            {
+                data.Add("status", "1");
+            }
+            if (statusNo.Checked)
+            {
+                data.Add("status", "0");
+            }
+            if (string.IsNullOrEmpty(id.Value))
+            {
+                attendanceObject.insertTableData(table, data);
+            }
+            else
+            {
+                //dictionary<string, object> condition = new dictionary<string, object>();
+                //condition.add("branch_id", id.value);
+                //attendanceobject.updatetabledata(table, data, condition);
+            }
+            Response.Redirect(baseUrl + "/outstationList");
+        }
 
         [WebMethod]
         public static List<Dictionary<string, object>> getData(string id)

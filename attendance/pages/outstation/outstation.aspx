@@ -39,7 +39,6 @@
 							<th> Date To </th>
 							<th> No of Days </th>
 							<th> Status </th>
-							<th> Actions </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -78,19 +77,38 @@
                         </div>
                         <div class="form-group">
                             <label class="col-md-2 control-label">
-                                Start Date
+                                Date
                                 <span class="text-danger">* </span>
                             </label>
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <input autocomplete="off" type="text" id="startDate" name="startDate" class="form-control startDate" placeholder="English Date" required="required" runat="server" />
+                                    <input autocomplete="off" type="text" id="date" name="date" class="form-control englishDate3" placeholder="English Date" required="required" runat="server" />
                                     <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
                                 </div>
                             </div>
                             <div class="col-md-1"></div>
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <input autocomplete="off" type="text" id="startNepaliDate" name="startNepaliDate" class="form-control startNepaliDate" placeholder="Nepali Date" required="required" runat="server" />
+                                    <input autocomplete="off" type="text" id="nepaliDate" name="nepaliDate" class="form-control nepaliDate3" placeholder="Nepali Date" required="required" runat="server" />
+                                    <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-md-2 control-label">
+                                Start Date
+                                <span class="text-danger">* </span>
+                            </label>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input autocomplete="off" type="text" id="startDate" name="startDate" class="form-control englishDate1" placeholder="English Date" required="required" runat="server" />
+                                    <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
+                                </div>
+                            </div>
+                            <div class="col-md-1"></div>
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input autocomplete="off" type="text" id="startNepaliDate" name="startNepaliDate" class="form-control nepaliDate1" placeholder="Nepali Date" required="required" runat="server" />
                                     <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
                                 </div>
                             </div>
@@ -102,16 +120,39 @@
                             </label>
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <input autocomplete="off" type="text" id="endDate" name="endDate" class="form-control endDate" placeholder="English Date" required="required" runat="server" />
+                                    <input autocomplete="off" type="text" id="endDate" name="endDate" class="form-control englishDate2" placeholder="English Date" required="required" runat="server" />
                                     <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
                                 </div>
                             </div>
                             <div class="col-md-1"></div>
                             <div class="col-md-4">
                                 <div class="input-group">
-                                    <input autocomplete="off" type="text" id="endNepaliDate" name="endNepaliDate" class="form-control endNepaliDate" placeholder="Nepali Date" required="required" runat="server" />
+                                    <input autocomplete="off" type="text" id="endNepaliDate" name="endNepaliDate" class="form-control nepaliDate2" placeholder="Nepali Date" required="required" runat="server" />
                                     <span class="input-group-addon bg-custom b-0"><i class="mdi mdi-calendar text-white"></i></span>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-2 control-label">
+                                Days 
+                                <span class="text-danger">* </span>
+                            </label>
+                            <div class="col-md-2">
+                                <input type="text" id="days" class="form-control onlyNumber" required="required" runat="server" readonly="readonly"/>
+                            </div>
+                            <div class="col-md-1"></div>
+                            <label class="col-md-2 control-label">
+                                Location
+                                <span class="text-danger">* </span>
+                            </label>
+                            <div class="col-md-4">
+                                <input type="text" id="location" class="form-control" required="required" runat="server"/>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-md-2 control-label">Text area</label>
+                            <div class="col-md-9">
+                                <textarea id="description" class="form-control" rows="5" required="required" runat="server"></textarea>
                             </div>
                         </div>
                         <div class="form-group">
@@ -137,7 +178,7 @@
                     </div>
                     <div class="modal-footer">
                         <button id="clear" type="button" class="btn btn-default waves-effect">Clear</button>
-                        <%--<asp:Button ID="saveButton" text="Save" CssClass="btn btn-success" OnClick="saveClick" runat="server" />--%>
+                        <asp:Button ID="saveButton" text="Save" CssClass="btn btn-success" OnClick="saveClick" runat="server" />
                     </div>
                 </form>
             </div>
@@ -150,7 +191,7 @@
         $(document).ready(function () {
             $('#<%=employee.ClientID%>').on('change', function () {
                 var empId = $('#<%=employee.ClientID%>').val();
-                $('#empIdForm').val(empId);
+                $('#empId').val(empId);
             });
 
             var timer;
@@ -171,21 +212,13 @@
                     })
                 }, 1000);
             })
-
-            <%--$('#add').on('click', function () {
-                $('#<%=id.ClientID%>').val('');
-                $('#<%=branchName.ClientID%>').val('');
-                $('#<%=branchCode.ClientID%>').val('');
-                $('#<%=statusYes.ClientID%>').prop('checked', true);
-                $('#<%=statusNo.ClientID%>').prop('checked', false);
-            })
-
-            $('#clear').on('click', function () {
-                $('#<%=branchName.ClientID%>').val('');
-                $('#<%=branchCode.ClientID%>').val('');
-                $('#<%=statusYes.ClientID%>').prop('checked', true);
-                $('#<%=statusNo.ClientID%>').prop('checked', false);
-            })--%>
+            $('#<%=endDate.ClientID%>, #<%=startDate.ClientID%>').change(function () {
+                if ($('#<%=startDate.ClientID%>').val() && $('#<%=endDate.ClientID%>').val()) {
+                    var diff = $('#<%=startDate.ClientID%>').datepicker("getDate") - $('#<%=endDate.ClientID%>').datepicker("getDate");
+                    $('#<%=days.ClientID%>').val(diff / (1000 * 60 * 60 * 24) * -1);
+                    console.log(diff);
+                }
+            });
         })
     </script>
 </asp:Content>
