@@ -27,7 +27,7 @@
                         <i class="mdi mdi-plus"></i> Add Content
                     </button>
                 </div>
-                <table id="datatable" class="table table-striped  table-colored table-info">
+                <table id="datatables" class="table table-striped  table-colored table-info">
                     <thead>
                         <tr>
                             <th> Employee ID </th>
@@ -38,7 +38,7 @@
 							<th> Date From </th>
 							<th> Date To </th>
 							<th> No of Days </th>
-							<th> Status </th>
+							<th>  </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -66,10 +66,10 @@
                                 <span class="text-danger">* </span>
                             </label>
                             <div class="col-md-4">
-                                <asp:DropDownList ID="employee" CssClass="form-control" runat="server" required="required"></asp:DropDownList>
+                                <asp:DropDownList ID="employee" CssClass="form-control employee" runat="server" required="required"></asp:DropDownList>
                             </div>
                             <label class="col-md-2 control-label">
-                                Employee Id 
+                                Employee Id
                             </label>
                             <div class="col-md-2">
                                 <input type="text" id="empId" class="form-control onlyNumber" required="required" />
@@ -189,36 +189,96 @@
 <asp:Content ID="Content2" ContentPlaceHolderID="footer" runat="server">
     <script>
         $(document).ready(function () {
-            $('#<%=employee.ClientID%>').on('change', function () {
+            dataTableFunction(function () {
+                $('.edit').on('click', function () {
+                    var id = $(this).attr('id');
+                    $.ajax({
+                        method: 'post',
+                        url: '<%=this.baseUrl%>/pages/outstation/outstation.aspx/getData',
+                        data: '{ "id": ' + id + '}',
+                        contentType: "application/json; charset=utf-8",
+                        dataType: 'json',
+                        success: function (result) {
+                            result = result.d[0];
+                            $('#<%=id.ClientID%>').val(result['VNO']);
+                            $('.employee option[value="' + result['EMP_ID '] + '"]').prop('selected', true);
+                            $('#empId').val(result['EMP_ID']);
+                            if (result['status'] == 1) {
+                                $('#<%=statusYes.ClientID%>').prop('checked', true);
+                                $('#<%=statusNo.ClientID%>').prop('checked', false);
+                            } else {
+                                $('#<%=statusYes.ClientID%>').prop('checked', false);
+                                $('#<%=statusNo.ClientID%>').prop('checked', true);
+                            }
+                            $('#<%=date.ClientID%>').val(formatDate(Date(result['TDATE'])));
+                            $('#<%=nepaliDate.ClientID%>').val(AD2BS(formatDate(Date(result['}']))));
+                            $('#<%=startDate.ClientID%>').val(formatDate(Date(result['SDATE'])));
+                            $('#<%=startNepaliDate.ClientID%>').val(AD2BS(formatDate(Date(result['SDATE']))));
+                            $('#<%=endDate.ClientID%>').val(formatDate(Date(result['EDATE'])));
+                            $('#<%=endNepaliDate.ClientID%>').val(AD2BS(formatDate(Date(result['EDATE']))));
+                            $('#<%=days.ClientID%>').val(result['DAYS']);
+                            $('#<%=location.ClientID%>').val(result['STATION']);
+                            $('#<%=description.ClientID%>').val(result['PURPOSE']);
+                        }
+                    })
+                })
+            });
+
+            $(document).on('change', '#<%=employee.ClientID%>', function () {
+                // Does some stuff and logs the event to the console
                 var empId = $('#<%=employee.ClientID%>').val();
                 $('#empId').val(empId);
             });
+            <%--$('#<%=employee.ClientID%>').on('change', function () {
+                var empId = $('#<%=employee.ClientID%>').val();
+                $('#empId').val(empId);
+            });--%>
 
-            var timer;
-            $('#empId').keyup(function () {
-
+            $(document).on('keyup', '#empId', function () {
+                console.log($(this).val());
                 clearTimeout(timer);
                 var typedId = $(this).val();
-                timer = setTimeout(function () {
-
-                    $('#menuListDiv').empty();
-                    $('#<%=employee.ClientID%> option').each(function () {
-
-                        listId = $(this).val();
-                        if (typedId == listId) {
-
-                            $(this).attr("selected", "selected");
-                        }
-                    })
-                }, 1000);
+                $('#<%=employee.ClientID%>  option[value="' + typedId + '"]').prop('selected', true);
             })
-            $('#<%=endDate.ClientID%>, #<%=startDate.ClientID%>').change(function () {
+            $(document).on('change', '#<%=endDate.ClientID%>, #<%=startDate.ClientID%>', function () {
                 if ($('#<%=startDate.ClientID%>').val() && $('#<%=endDate.ClientID%>').val()) {
                     var diff = $('#<%=startDate.ClientID%>').datepicker("getDate") - $('#<%=endDate.ClientID%>').datepicker("getDate");
                     $('#<%=days.ClientID%>').val(diff / (1000 * 60 * 60 * 24) * -1);
-                    console.log(diff);
                 }
             });
+
+            $(document).on('click', '#add',  function () {
+                $('#<%=id.ClientID%>').val('');
+                $('#<%=employee.ClientID%>').val('');
+                $('#empId').val('');
+                $('#<%=date.ClientID%>').val('');
+                $('#<%=nepaliDate.ClientID%>').val('');
+                $('#<%=startDate.ClientID%>').val('');
+                $('#<%=startNepaliDate.ClientID%>').val('');
+                $('#<%=endDate.ClientID%>').val('');
+                $('#<%=endNepaliDate.ClientID%>').val('');
+                $('#<%=days.ClientID%>').val('');
+                $('#<%=location.ClientID%>').val('');
+                $('#<%=description.ClientID%>').val('');
+                $('#<%=statusYes.ClientID%>').prop('checked', true);
+                $('#<%=statusNo.ClientID%>').prop('checked', false);
+            })
+
+            $(document).on('click', '#clear',  function () {
+                $('#<%=employee.ClientID%>').val('');
+                $('#empId').val('');
+                $('#<%=date.ClientID%>').val('');
+                $('#<%=nepaliDate.ClientID%>').val('');
+                $('#<%=startDate.ClientID%>').val('');
+                $('#<%=startNepaliDate.ClientID%>').val('');
+                $('#<%=endDate.ClientID%>').val('');
+                $('#<%=endNepaliDate.ClientID%>').val('');
+                $('#<%=days.ClientID%>').val('');
+                $('#<%=location.ClientID%>').val('');
+                $('#<%=description.ClientID%>').val('');
+                $('#<%=statusYes.ClientID%>').prop('checked', true);
+                $('#<%=statusNo.ClientID%>').prop('checked', false);
+            })
         })
     </script>
 </asp:Content>

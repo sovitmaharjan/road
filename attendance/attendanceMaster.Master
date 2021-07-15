@@ -461,6 +461,27 @@
     <script src="<%=this.baseUrl%>/assets/plugins/jquery.filer/js/jquery.filer.min.js"></script>
 
     <script type="text/javascript">
+
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+
+        function dataTableFunction(param) {
+            $('#datatables').dataTable({
+                drawCallback: param
+            })
+        }
+
         $(document).ready(function () {
 
             $('.datePickerForAll').datepicker({
@@ -556,6 +577,7 @@
     <%--Date Picker--%>
     <script type="text/javascript">
         $(document).ready(function () {
+
             $('.englishDate1').change(function () {
                 var a = $('.englishDate1').val();
                 if (a != "") {

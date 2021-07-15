@@ -40,7 +40,7 @@ namespace attendance.pages.outstation {
                 employee.DataBind();
                 employee.Items.Insert(0, new ListItem("Select Employee", ""));
 
-                DataTable dtTableData = attendanceObject.queryFunction("select * from Tbl_Emp_Outstation join view_Emp_Info on Tbl_Emp_Outstation.EMP_ID = view_Emp_Info.EMP_ID");
+                DataTable dtTableData = attendanceObject.queryFunction("select Tbl_Emp_Outstation.*, view_emp_info.emp_Fullname, view_emp_info.DEPT_NAME, view_emp_info.DEG_NAME from Tbl_Emp_Outstation join view_Emp_Info on Tbl_Emp_Outstation.EMP_ID = view_Emp_Info.EMP_ID");
                 string tableBodyRow = "";
                 foreach (DataRow value in dtTableData.Rows)
                 {
@@ -52,14 +52,8 @@ namespace attendance.pages.outstation {
                     tableBodyRow += "<td>" + value["STATION"] + "</td>";
                     tableBodyRow += "<td>" + Convert.ToDateTime(value["SDATE"]).ToString("yyyy-MM-dd") + "</td>";
                     tableBodyRow += "<td>" + Convert.ToDateTime(value["EDATE"]).ToString("yyyy-MM-dd") + "</td>";
-                    if (Convert.ToInt32(value["status"]) == 0)
-                    {
-                        tableBodyRow += "<td>Inactive</td>";
-                    }
-                    else
-                    {
-                        tableBodyRow += "<td>Active</td>";
-                    }
+                    tableBodyRow += "<td>" + value["DAYS"] + "</td>";
+                    tableBodyRow += "<td><div class='button-list'><button type='button' id='" + value["VNO"] + "' class='btn btn-warning w-xs waves-effect waves-light btn-xs edit' data-toggle='modal' data-target='#addContent'><i class='mdi mdi-pencil'></i> Edit</button></div></td>";
                     tableBodyRow += "</tr>";
                 }
                 tableBody.Text = tableBodyRow;
@@ -70,6 +64,7 @@ namespace attendance.pages.outstation {
         {
             string table = "Tbl_Emp_Outstation";
             Dictionary<string, object> data = new Dictionary<string, object>();
+            
             data.Add("EMP_ID", employee.SelectedValue);
             data.Add("TDATE", date.Value);
             data.Add("STATION", location.Value);
@@ -87,13 +82,14 @@ namespace attendance.pages.outstation {
             }
             if (string.IsNullOrEmpty(id.Value))
             {
+                data.Add("VNO", attendanceObject.queryFunction("select (case when count(VNO) = 0 then 1 else max(VNO) + 1 end) from Tbl_Emp_Outstation").Rows[0][0].ToString());
                 attendanceObject.insertTableData(table, data);
             }
             else
             {
-                //dictionary<string, object> condition = new dictionary<string, object>();
-                //condition.add("branch_id", id.value);
-                //attendanceobject.updatetabledata(table, data, condition);
+                Dictionary<string, object> condition = new Dictionary<string, object>();
+                condition.Add("VNO", id.Value);
+                attendanceObject.updateTableData(table, data, condition);
             }
             Response.Redirect(baseUrl + "/outstationList");
         }
@@ -103,9 +99,9 @@ namespace attendance.pages.outstation {
         {
             List<string> field = new List<string>();
             field.Add("*");
-            string table = "Tbl_Comp_Branch";
+            string table = "Tbl_Emp_Outstation";
             Dictionary<string, object> condition = new Dictionary<string, object>();
-            condition.Add("BRANCH_ID", "1");
+            condition.Add("VNO", id);
             DataTable dtTableDataById = attendanceObject.getTableData(field, table, condition);
 
             List<Dictionary<string, object>> data = new List<Dictionary<string, object>>();
