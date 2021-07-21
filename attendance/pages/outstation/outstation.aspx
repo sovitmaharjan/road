@@ -200,8 +200,9 @@
                         dataType: 'json',
                         success: function (result) {
                             result = result.d[0];
+                            console.log(result);
                             $('#<%=id.ClientID%>').val(result['VNO']);
-                            $('.employee option[value="' + result['EMP_ID '] + '"]').prop('selected', true);
+                            $('#<%=employee.ClientID%> option[value=' + result['EMP_ID '] + ']').attr('selected', 'selected');
                             $('#empId').val(result['EMP_ID']);
                             if (result['status'] == 1) {
                                 $('#<%=statusYes.ClientID%>').prop('checked', true);

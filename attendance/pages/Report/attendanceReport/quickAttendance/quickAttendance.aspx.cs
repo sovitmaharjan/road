@@ -25,13 +25,6 @@ namespace attendance.pages.Report.attendanceReport.quickAttendance
         
         protected void Page_Load(object sender, EventArgs e)
         {
-            Session["userId"] = 715;
-            Session["userName"] = 715;
-            Session["password"] = 123;
-            Session["userTypeId"] = 2;
-            Session["dept_id"] = 35;
-            Session["message"] = 1;
-
             sessionUserId = Convert.ToInt32(Session["userId"].ToString());
             sessionUserTypeId = Session["userTypeId"].ToString();
             sessionDept_id = Convert.ToInt32(Session["DEPT_ID"].ToString());
